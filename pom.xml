@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.kerneln64</groupId>
+	<artifactId>KernelN64</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<!-- Set Java Version -->
+	<properties>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+        <!-- Legacy JOGL is bundled with this Eclipse project. -->
+        <dependency>
+            <groupId>local.jogl</groupId>
+            <artifactId>jogl</artifactId>
+            <version>1.1.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/Jario64winportable/jogl.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>local.jogl</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>1.1.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/Jario64winportable/gluegen-rt.jar</systemPath>
+        </dependency>
+
+
+	</dependencies>
+
+	<build>
+        <resources>
+            <resource><directory>src/main/resources</directory></resource>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes><include>**/*.properties</include><include>**/*.png</include></includes>
+            </resource>
+        </resources>
+		<plugins>
+			<!-- Maven Shade Plugin builds a single runnable JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>kerneln64.Main</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

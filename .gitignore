@@ -1,0 +1,41 @@
+# Build and release output
+/target/
+/dist/
+/release-assets/
+/KernelN64.exe
+/Jario64Plus.exe
+/Kernel64 preparement for github release/
+
+# Local emulator data and personal settings
+/Save/
+/Screenshots/
+/Logs/
+/CrashReports/
+/config.properties
+/*.config
+/Compatibility.properties
+/*.log
+/save.state*
+*.j64state
+*.z64
+*.n64
+*.v64
+*.rom
+*.elf
+*.map
+*.eep
+*.sra
+*.fla
+*.mpk
+
+# Local IDE/session metadata; retain shared Eclipse project configuration
+/.metadata/
+/.idea/
+/.vscode/
+/.codex/
+/.agents/
+*.class
+*.obj
+*.pdb
+*.exp
+*.lib

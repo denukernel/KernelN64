@@ -1,0 +1,29 @@
+# Jario64+ named GameShark codes
+# Mario-head stretch preset v1
+[CHEAT]
+NAME=Funny Mario Options\Unlimited head stretching (title screen)
+NOTE=SM64 US title screen: hold A on the nose, ear, cap or another grabbable feature, then move the stick to stretch it beyond its usual limit. Release A to let it spring back; R keeps its normal hold behavior. Disabling restores the three spring coefficients. Guarded against gameplay overlays and different code layouts.
+GROUP=
+ENABLED=false
+D118E660 27BD
+D118E662 FF38
+D118E664 AFBF
+D118E666 0034
+D118E700 4481
+D118E702 9800
+8118E6FE 0000
+D118E660 27BD
+D118E662 FF38
+D118E664 AFBF
+D118E666 0034
+D118E700 4481
+D118E702 9800
+8118E722 0000
+D118E660 27BD
+D118E662 FF38
+D118E664 AFBF
+D118E666 0034
+D118E700 4481
+D118E702 9800
+8118E746 0000
+
