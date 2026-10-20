@@ -34,6 +34,13 @@ User-captured scenes from the two tested games. These screenshots show specific 
 
 ![Super Mario 64 castle exterior running in KernelN64](assets/screenshots/super-mario-64-castle.png)
 
+### Debug Tools
+<img width="1103" height="861" alt="image" src="https://github.com/user-attachments/assets/8a40e579-8f28-4b53-b502-59de963caac6" />
+
+### Firmware
+<img width="1919" height="1028" alt="image" src="https://github.com/user-attachments/assets/f4747a29-08bf-4d04-b4c5-c439f6f13ab8" />
+
+
 ## Features
 
 * GLN64j and experimental native Direct3D 11 graphics, with live graphics/audio/input plugin switching.
