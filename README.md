@@ -4,7 +4,17 @@
 
 KernelN64 is a Pure Java Windows Nintendo 64 emulator based on Jario64, with an Eclipse-friendly Java core, GLN64j graphics, experimental Direct3D 11 graphics, and Azimer HLE audio.
 
-This is a **development preview**. Compatibility varies by game; Super Mario 64 has received the most local testing. No game ROMs, firmware ROMs, saves or game assets are included.
+This is a **development preview**. Super Mario 64 and Mario Kart 64 are the two tested games; all other games remain untested. No game ROMs, firmware ROMs, saves or game assets are included.
+
+## Game compatibility
+
+| Game | Status | Testing coverage |
+| --- | --- | --- |
+| Super Mario 64 | Tested | Has received the most local testing. |
+| Mario Kart 64 | Tested | USA version tested with GLN64j using attract-mode race savestate replays, framebuffer comparisons, and save/load checks. |
+| All other games, including Zelda titles | Untested | Compatibility has not been verified. |
+
+Tested does not mean fully compatible or verified through a complete playthrough. Results can vary by renderer, ROM revision, and scene. See the [GLN64j compatibility notes](docs/GLN64j-compatibility.md) for the Mario Kart 64 fixes and testing limits.
 
 ## Features
 
