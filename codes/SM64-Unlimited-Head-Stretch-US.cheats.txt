@@ -1,4 +1,4 @@
-# Jario64+ named GameShark codes
+# KernelN64 named GameShark codes
 # Mario-head stretch preset v1
 [CHEAT]
 NAME=Funny Mario Options\Unlimited head stretching (title screen)

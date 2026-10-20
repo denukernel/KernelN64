@@ -16,14 +16,14 @@
       <attribute name="maven.pomderived" value="true" />
     </attributes>
   </classpathentry>
-  <classpathentry kind="lib" path="Jario64winportable/gluegen-rt.jar">
+  <classpathentry kind="lib" path="KernelN64winportable/gluegen-rt.jar">
     <attributes>
-      <attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="KernelN64/Jario64winportable" />
+      <attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="KernelN64/KernelN64winportable" />
     </attributes>
   </classpathentry>
-  <classpathentry kind="lib" path="Jario64winportable/jogl.jar">
+  <classpathentry kind="lib" path="KernelN64winportable/jogl.jar">
     <attributes>
-      <attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="KernelN64/Jario64winportable" />
+      <attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="KernelN64/KernelN64winportable" />
     </attributes>
   </classpathentry>
   <classpathentry kind="output" path="target/classes" />

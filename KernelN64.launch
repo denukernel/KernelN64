@@ -3,5 +3,5 @@
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="kerneln64.Main"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="KernelN64"/>
     <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:KernelN64}"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g -Djava.library.path=&quot;${workspace_loc:KernelN64}/Jario64winportable&quot;"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g -Djava.library.path=&quot;${workspace_loc:KernelN64}/KernelN64winportable&quot;"/>
 </launchConfiguration>

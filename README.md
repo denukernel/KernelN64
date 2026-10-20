@@ -4,14 +4,14 @@
 
 KernelN64 is a Pure Java Windows Nintendo 64 emulator based on Jario64, with an Eclipse-friendly Java core, GLN64j graphics, experimental Direct3D 11 graphics, and Azimer HLE audio.
 
-This is a **development preview**. Super Mario 64 and Mario Kart 64 are tested games. GameShark Pro 2.0 and 3.3 firmware ROMs are also tested, both in the **Okay** tier. All other games and firmware versions remain untested. No game ROMs, firmware ROMs, saves or game assets are included.
+This is a **development preview**. Super Mario 64 and Mario Kart 64 are tested games in the **Good** tier. GameShark Pro 2.0 and 3.3 firmware ROMs are also tested, both in the **Okay** tier. All other games and firmware versions remain untested. No game ROMs, firmware ROMs, saves or game assets are included.
 
 ## Game compatibility
 
 | Game | Status | Testing coverage |
 | --- | --- | --- |
-| Super Mario 64 | Tested | Has received the most local testing. |
-| Mario Kart 64 | Tested | USA version tested with GLN64j using attract-mode race savestate replays, framebuffer comparisons, and save/load checks. |
+| Super Mario 64 | Tested — Good | Has received the most local testing. |
+| Mario Kart 64 | Tested — Good | USA version tested with GLN64j using attract-mode race savestate replays, framebuffer comparisons, and save/load checks. |
 | GameShark Pro 2.0 firmware ROM | Tested — Okay | Standalone firmware support; physical pass-through cartridge behavior is not emulated. |
 | GameShark Pro 3.3 firmware ROM | Tested — Okay | Standalone firmware support; physical pass-through cartridge behavior is not emulated. |
 | All other games and firmware versions, including Zelda titles | Untested | Compatibility has not been verified. |
@@ -51,7 +51,7 @@ $env:JAVA_HOME = "C:\Path\To\Your\JDK"
 .\launcher\Build.ps1
 ```
 
-Alternatively, pass `-Jdk "C:\Path\To\Your\JDK"`. The build discovers Visual C++ with `vswhere` and writes the portable application to `dist/KernelN64`. It also refreshes Eclipse's compiled classes. The included JOGL/GlueGen dependencies are retained in `Jario64winportable` for compatibility with existing project configuration.
+Alternatively, pass `-Jdk "C:\Path\To\Your\JDK"`. The build discovers Visual C++ with `vswhere` and writes the portable application to `dist/KernelN64`. It also refreshes Eclipse's compiled classes. The included JOGL/GlueGen dependencies are retained in `KernelN64winportable` for compatibility with existing project configuration.
 
 The main application and native renderer sources are included. Testing fixtures and automated testing files are intentionally omitted from this prepared source snapshot.
 

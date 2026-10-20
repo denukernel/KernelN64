@@ -204,7 +204,7 @@ final class TextureUploads {
 		}
 		int crc = (int) state.crc32.getValue();
 		/******************************************************
-		 * N64 CORRUPTION-SAFE PATCH FOR JARIO64 TEXTURECACHE
+		 * N64 CORRUPTION-SAFE PATCH FOR KERNELN64 TEXTURECACHE
 		 ******************************************************/
 
 		// Avoid negative or zero dimensions

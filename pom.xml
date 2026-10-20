@@ -22,14 +22,14 @@
             <artifactId>jogl</artifactId>
             <version>1.1.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/Jario64winportable/jogl.jar</systemPath>
+            <systemPath>${project.basedir}/KernelN64winportable/jogl.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>local.jogl</groupId>
             <artifactId>gluegen-rt</artifactId>
             <version>1.1.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/Jario64winportable/gluegen-rt.jar</systemPath>
+            <systemPath>${project.basedir}/KernelN64winportable/gluegen-rt.jar</systemPath>
         </dependency>
 
 

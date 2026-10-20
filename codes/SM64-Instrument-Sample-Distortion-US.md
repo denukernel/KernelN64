@@ -33,7 +33,7 @@ Verified US audio layout in SM64 US v1.0, SHA-256
 and the user's US extension, SHA-256
 `5cd3a174dede8bd9dc1cac671a7a5459600db1dc6d2c556a09de11f1374bc5a0`.
 Other regions, relocated audio engines, physical GameSharks, and other cheat
-engines are untested. These codes use Jario64+'s chained-condition semantics
+engines are untested. These codes use KernelN64's chained-condition semantics
 and its bank-aware undo.
 
 `SM64-Instrument-Sample-Distortion-US.cheats.txt` contains four disabled examples
@@ -99,11 +99,11 @@ existing restoration behavior.
 
 ## Verification
 
-`jario64.SampleCodeChecks` verifies coefficient-only writes, named multi-program
+Local sample-code checks verify coefficient-only writes, named multi-program
 roundtrips, unchanged headers/pointers, restoration, rejection of malformed banks,
 suppression during loading, and stale-undo invalidation after serialization.
 
-`jario64.SampleCodeRomChecks ROM copied-state [RAM-MB [--start-course]]` runs in
+Local sample-code ROM checks (not included in the prepared source snapshot) run in
 an isolated directory. It builds actual bank codes, captures 262144 bytes of HLE
 PCM per effect from the same baseline, requires distinct nonzero output, checks
 for libultra faults, checks unchanged note/tempo data, and verifies every original

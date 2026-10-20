@@ -8,8 +8,8 @@ tuning still applies. Percussion or effects that bypass the note table can remai
 unchanged. New notes pick up the effect; held notes can finish at their old pitch.
 
 `SM64-Audio-Distortion-US.cheats.txt` contains the same presets for import, all
-disabled. These are generated Jario64+ presets. Their chained D1 guards use
-Jario64+'s conditional scope; other engines/hardware require separate testing.
+disabled. These are generated KernelN64 presets. Their chained D1 guards use
+KernelN64's conditional scope; other engines/hardware require separate testing.
 Disabling restores the original table through this emulator's cheat undo system.
 All Audio presets share one exclusive group, including the historical Alien code.
 

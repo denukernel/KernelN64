@@ -50,7 +50,7 @@ final class NativeLibraries {
         }
         roots.add(Path.of("").toAbsolutePath());
         for (Path root : roots) {
-            for (String child : new String[] { "Jario64winportable", "lib" }) {
+            for (String child : new String[] { "KernelN64winportable", "lib" }) {
                 Path directory = root.resolve(child).toAbsolutePath().normalize();
                 if (Files.isRegularFile(directory.resolve(System.mapLibraryName("jogl")))) return directory;
             }

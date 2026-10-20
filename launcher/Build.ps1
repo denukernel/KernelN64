@@ -15,7 +15,7 @@ if (Test-Path -LiteralPath $classRoot) {
     Remove-Item -LiteralPath $resolvedClasses -Recurse -Force
 }
 New-Item -ItemType Directory -Force -Path $outputRoot, $classRoot, $tempRoot, (Join-Path $outputRoot 'lib') | Out-Null
-$libraries = @('jogl.jar', 'gluegen-rt.jar') | ForEach-Object { Join-Path $projectRoot "Jario64winportable/$_" }
+$libraries = @('jogl.jar', 'gluegen-rt.jar') | ForEach-Object { Join-Path $projectRoot "KernelN64winportable/$_" }
 $sources = @(Get-ChildItem (Join-Path $projectRoot 'src/main/java') -Recurse -Filter '*.java' | ForEach-Object FullName)
 & (Join-Path $Jdk 'bin/javac.exe') --release 21 -encoding UTF-8 -cp ($libraries -join ';') -d $classRoot $sources
 if ($LASTEXITCODE -ne 0) { throw 'Java compilation failed' }
@@ -62,8 +62,8 @@ if ($testSources.Count -gt 0) {
 & (Join-Path $Jdk 'bin/jar.exe') "-J-Djava.io.tmpdir=$tempRoot" --create --file (Join-Path $outputRoot 'app.jar') --main-class kerneln64.Main -C $classRoot .
 if ($LASTEXITCODE -ne 0) { throw 'JAR creation failed' }
 foreach ($library in $libraries) { Copy-Item -LiteralPath $library -Destination (Join-Path $outputRoot 'lib') -Force }
-foreach ($native in @('gluegen-rt.dll', 'jogl.dll', 'jogl_awt.dll', 'jogl_cg.dll', 'JarioD3D11.dll')) {
-    Copy-Item -LiteralPath (Join-Path $projectRoot "Jario64winportable/$native") -Destination (Join-Path $outputRoot 'lib') -Force
+foreach ($native in @('gluegen-rt.dll', 'jogl.dll', 'jogl_awt.dll', 'jogl_cg.dll', 'KernelN64D3D11.dll')) {
+    Copy-Item -LiteralPath (Join-Path $projectRoot "KernelN64winportable/$native") -Destination (Join-Path $outputRoot 'lib') -Force
 }
 $runtime = Join-Path $outputRoot 'runtime'
 if (-not (Test-Path -LiteralPath (Join-Path $runtime 'bin/javaw.exe'))) {
@@ -114,10 +114,4 @@ if (Test-Path -LiteralPath $codeSource) {
     }
 }
 Write-Output "Built: $outputRoot/KernelN64.exe"
-# Retain external-tool entry points that were configured before the rename.
-Copy-Item -LiteralPath (Join-Path $outputRoot 'KernelN64.exe') -Destination (Join-Path $projectRoot 'Jario64Plus.exe') -Force
-$legacyPortable = Join-Path $projectRoot 'dist/Jario64Plus'
-if (Test-Path -LiteralPath (Join-Path $legacyPortable 'Jario64Plus.exe')) {
-    Copy-Item -LiteralPath (Join-Path $outputRoot 'KernelN64.exe') -Destination (Join-Path $legacyPortable 'Jario64Plus.exe') -Force
-}
 Write-Output "Project launcher: $projectRoot/KernelN64.exe"

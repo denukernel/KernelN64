@@ -1,9 +1,9 @@
-# Jario64+ named GameShark codes
+# KernelN64 named GameShark codes
 # Mario-head stretch preset v1
 # SM64 expanded preset catalog v2
 [CHEAT]
 NAME=Audio\Generated distortion\Alien bass (one octave down)
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Halves note frequencies; lower and heavier music. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Halves note frequencies; lower and heavier music. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03
@@ -2313,7 +2313,7 @@ D131B4C2 3BB4
 
 [CHEAT]
 NAME=Audio\Generated distortion\Alien helium (one octave up)
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Doubles note frequencies; high notes may reach the game's resampling limit. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Doubles note frequencies; high notes may reach the game's resampling limit. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03
@@ -4623,7 +4623,7 @@ D131B4C2 3BB4
 
 [CHEAT]
 NAME=Audio\Generated distortion\Alien detune (half semitone up)
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Raises notes by half a semitone for an unfamiliar tuning. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Raises notes by half a semitone for an unfamiliar tuning. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03
@@ -6933,7 +6933,7 @@ D131B4C2 3BB4
 
 [CHEAT]
 NAME=Audio\Generated distortion\Alien split octaves
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Alternates low and high octaves by note number. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Alternates low and high octaves by note number. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03
@@ -9243,7 +9243,7 @@ D131B4C2 3BB4
 
 [CHEAT]
 NAME=Audio\Generated distortion\Alien crooked scale
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Repeats a -3, 0, +3 semitone distortion across note numbers. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Repeats a -3, 0, +3 semitone distortion across note numbers. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03
@@ -11553,7 +11553,7 @@ D131B4C2 3BB4
 
 [CHEAT]
 NAME=Audio\Generated distortion\Alien robot monotone
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Replaces the note table with one pitch ratio. Instrument/sample tuning still differs. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Replaces the note table with one pitch ratio. Instrument/sample tuning still differs. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03
@@ -13863,7 +13863,7 @@ D131B4C2 3BB4
 
 [CHEAT]
 NAME=Audio\Generated distortion\Alien mirrored melody
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Mirrors the twelve note positions within each octave, scrambling familiar melodies. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Mirrors the twelve note positions within each octave, scrambling familiar melodies. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03
@@ -16173,7 +16173,7 @@ D131B4C2 3BB4
 
 [CHEAT]
 NAME=Audio\Generated distortion\Alien alternating detune
-NOTE=SM64 US v1.0 / compatible US-based extensions only. Alternates notes a half-semitone flat and sharp for an uneven alien tuning. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. Jario64+ generated preset; chained guards use this emulator's conditional semantics.
+NOTE=SM64 US v1.0 / compatible US-based extensions only. Alternates notes a half-semitone flat and sharp for an uneven alien tuning. Changes gNoteFrequencies (80333994). New notes use the changed ratios; sampled/percussion sounds may be unaffected. Select one Audio effect at a time. Enable after boot. Disabling restores the table; held notes may finish at their current pitch. Guarded against different audio code layouts. Source: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/data.c; readers: https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio/seqplayer.c. KernelN64 generated preset; chained guards use this emulator's conditional semantics.
 GROUP=sound
 ENABLED=false
 D131CB84 3C03

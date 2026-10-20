@@ -57,7 +57,7 @@ def main():
         copy(ROOT / name, repository / name)
     for name in ["org.eclipse.jdt.core.prefs", "org.eclipse.m2e.core.prefs"]:
         copy(ROOT / ".settings" / name, repository / ".settings" / name)
-    tree(ROOT / "src/main", repository / "src/main", {"jario64_icon.png", "Test.java"})
+    tree(ROOT / "src/main", repository / "src/main", {"Test.java"})
     classpath = ET.parse(repository / ".classpath")
     for entry in list(classpath.getroot()):
         path = entry.get("path", "")
@@ -72,18 +72,19 @@ def main():
     tree(ROOT / "codes", repository / "codes")
     for name in ["kerneln64-icon-source.png", "kerneln64.ico"]:
         copy(ROOT / "assets" / name, repository / "assets" / name)
-    for name in ["jogl.jar", "gluegen-rt.jar", "jogl.dll", "jogl_awt.dll", "jogl_cg.dll", "gluegen-rt.dll", "JarioD3D11.dll"]:
-        copy(ROOT / "Jario64winportable" / name, repository / "Jario64winportable" / name)
+    for name in ["jogl.jar", "gluegen-rt.jar", "jogl.dll", "jogl_awt.dll", "jogl_cg.dll", "gluegen-rt.dll", "KernelN64D3D11.dll"]:
+        copy(ROOT / "KernelN64winportable" / name, repository / "KernelN64winportable" / name)
     copy(ROOT / "docs/Release-README.md", repository / "README.md")
-    for name in ["Source-layout.md", "SM64-decomp-cheats.md", "GameShark-firmware.md", "Release-preparation.md", "Release-README.md", "Portable-README.md"]:
+    for name in ["Source-layout.md", "SM64-decomp-cheats.md", "GameShark-firmware.md", "GLN64j-compatibility.md", "Release-preparation.md", "Release-README.md", "Portable-README.md"]:
         text = (ROOT / "docs" / name).read_text(encoding="utf-8")
         if name in {"SM64-decomp-cheats.md", "GameShark-firmware.md"}:
             text = text.split("\n## Verification\n")[0]
         if name == "SM64-decomp-cheats.md":
             text = text.split("\n## Verified build and address evidence\n")[0]
-            start = text.index("Opening the supplied")
-            end = text.index("No changes to the decomp source", start)
-            text = text[:start] + "The matching ELF is discovered automatically. " + text[end:]
+            if "Opening the supplied" in text:
+                start = text.index("Opening the supplied")
+                end = text.index("No changes to the decomp source", start)
+                text = text[:start] + "The matching ELF is discovered automatically. " + text[end:]
         if name == "Source-layout.md":
             text = text.replace("Feature checks live under matching test packages, with shared runtime checks in `src/test/java/kerneln64`.",
                                 "This prepared source snapshot omits automated testing files and local fixtures.")

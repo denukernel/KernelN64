@@ -9,7 +9,7 @@ public final class NativeD3D11 {
     public static synchronized void load() {
         if (loaded) return;
         Path local = bundledLibrary();
-        if (local != null) System.load(local.toString()); else System.loadLibrary("JarioD3D11");
+        if (local != null) System.load(local.toString()); else System.loadLibrary("KernelN64D3D11");
         loaded = true;
     }
 
@@ -28,8 +28,8 @@ public final class NativeD3D11 {
     }
 
     private static Path libraryUnder(Path root) {
-        for (String directory : new String[] { "Jario64winportable", "lib" }) {
-            Path library = root.resolve(directory).resolve(System.mapLibraryName("JarioD3D11")).toAbsolutePath().normalize();
+        for (String directory : new String[] { "KernelN64winportable", "lib" }) {
+            Path library = root.resolve(directory).resolve(System.mapLibraryName("KernelN64D3D11")).toAbsolutePath().normalize();
             if (Files.isRegularFile(library)) return library;
         }
         return null;

@@ -25,7 +25,7 @@ SM64 US v1.0, big-endian, SHA-256
 and the tested US-based extended ROM, SHA-256
 `5cd3a174dede8bd9dc1cac671a7a5459600db1dc6d2c556a09de11f1374bc5a0`.
 Other layouts need independent verification. These chained D1 conditions use
-Jario64+'s conditional scope; other emulators and physical GameSharks are untested.
+KernelN64's conditional scope; other emulators and physical GameSharks are untested.
 
 Source revision: n64decomp/sm64
 `9921382a68bb0c865e5e45eb594d9c64db59b1af`:
@@ -70,7 +70,7 @@ halfword write; see `SM64-Audio-Distortion-US.md` for those addresses.
 
 Enable after boot. New notes use the changed scale; percussion that bypasses
 the note table can remain unchanged. Disabling restores owned tempo/table
-bytes through Jario64+'s undo system. Existing notes may finish at their old
+bytes through KernelN64's undo system. Existing notes may finish at their old
 pitch or duration. If the game writes a new tempo, the undo baseline follows
 that newer value; disabling does not rewind the song position.
 
@@ -79,10 +79,10 @@ instrument pointers, M64 data, or the audio thread's control flow.
 
 ## Reproducible checks
 
-`jario64.MusicCodeChecks` covers write bounds, SFX-tempo isolation, finite note
+Local music-code checks cover write bounds, SFX-tempo isolation, finite note
 ratios, each tempo-layout guard, undo, and old named-catalog migration.
 
-`jario64.MusicCodeRomChecks ROM [copied-scene [RAM-MB [--start-course]]]` must run in an isolated working
+Local music-code ROM checks (not included in the prepared source snapshot) must run in an isolated working
 directory. Its optional scene defaults to 32 MiB RDRAM; specify 8 for a retail
 8 MiB state. `--start-course` presses A to enter the course from the supplied
 retail star-select fixture, avoiding its short non-looping jingle. It counts real background

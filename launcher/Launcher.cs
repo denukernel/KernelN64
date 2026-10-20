@@ -53,9 +53,6 @@ internal static class Launcher {
     [STAThread] static int Main(string[] args) {
         string home = AppDomain.CurrentDomain.BaseDirectory;
         string app = File.Exists(Path.Combine(home, "app.jar")) ? home : Path.Combine(home, "dist", "KernelN64");
-        // Old portable launchers keep their save directory but use the current application.
-        string sibling = Path.GetFullPath(Path.Combine(home, "..", "KernelN64"));
-        if (new DirectoryInfo(home).Name == "Jario64Plus" && File.Exists(Path.Combine(sibling, "app.jar"))) app = sibling;
         string logPath = null;
         try {
             bool check = args.Length == 1 && args[0] == "--check";
