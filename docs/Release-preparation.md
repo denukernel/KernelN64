@@ -9,10 +9,6 @@ The prepared folder separates a clean source repository from downloadable releas
 * Source layout and supported feature documentation, copyright/license notices, and documented cheat preset catalogs.
 * A Windows x64 portable ZIP with the launcher, application JAR, native libraries and complete Java runtime legal files.
 
-## Excluded
-
-ROMs, firmware images, saves, savestates, screenshots, logs, crash reports, personal configuration and cheat selections, local research/decomp files, `port to java`, build caches, old plugin JARs, unused OpenAL/native-audio DLLs, and testing source/output are excluded. The source package's build script supports the absence of `src/test`.
-
 ## Before publishing
 
 1. Review the inherited license notices in `THIRD-PARTY-NOTICES.md` and `licenses/Project64-notice.txt`. Some original files include both GPL notices and Project64 noncommercial-use terms. The preparation preserves these terms and does not claim that a single blanket license resolves them.
