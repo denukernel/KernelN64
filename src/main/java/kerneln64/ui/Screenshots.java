@@ -57,6 +57,8 @@ public final class Screenshots {
     }
     public static BufferedImage currentFrame() {
         if(Main.mem!=null && GameSharkCartridge.isFirmware(Main.mem.rom))return GameSharkFramebuffer.read();
+        if (Main.video.gfxPlugin instanceof kernel64gl.Kernel64GLPlugin && kernel64gl.engine.opengl.OpenGlGdp.hDC!=null)
+            return readDrawable(kernel64gl.engine.opengl.OpenGlGdp.hDC,GL.GL_FRONT);
         if (Main.video.gfxPlugin instanceof d3d11.D3D11Plugin d3d) return d3d.screenshot();
         if (Main.video.gfxPlugin instanceof gln64j.GLN64jPlugin && gln64j.opengl.OpenGlGdp.hDC != null)
             return readDrawable(gln64j.opengl.OpenGlGdp.hDC, GL.GL_FRONT);
@@ -65,6 +67,9 @@ public final class Screenshots {
     }
     public static void present(BufferedImage image) {
         if (image == null) return;
+        if (Main.video.gfxPlugin instanceof kernel64gl.Kernel64GLPlugin && kernel64gl.engine.opengl.OpenGlGdp.hDC!=null) {
+            presentDrawable(kernel64gl.engine.opengl.OpenGlGdp.hDC,image,GL.GL_FRONT);return;
+        }
         if (Main.video.gfxPlugin instanceof d3d11.D3D11Plugin d3d) { d3d.preview(image); return; }
         if (Main.video.gfxPlugin instanceof gln64j.GLN64jPlugin && gln64j.opengl.OpenGlGdp.hDC != null)
             presentDrawable(gln64j.opengl.OpenGlGdp.hDC, image, GL.GL_FRONT);
@@ -77,6 +82,8 @@ public final class Screenshots {
         if (acquired && context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT) throw new IllegalStateException("Cannot present rewind frame.");
         try {
             GL gl = drawable.getGL(); int[] mode = new int[1]; gl.glGetIntegerv(GL.GL_MATRIX_MODE, mode, 0);
+            int[] program=new int[1];boolean programmable=gl.isFunctionAvailable("glUseProgram");
+            if(programmable){gl.glGetIntegerv(GL.GL_CURRENT_PROGRAM,program,0);gl.glUseProgram(0);}
             gl.glPushAttrib(GL.GL_ALL_ATTRIB_BITS);
             gl.glMatrixMode(GL.GL_PROJECTION); gl.glPushMatrix(); gl.glLoadIdentity(); gl.glOrtho(0, drawable.getWidth(), 0, drawable.getHeight(), -1, 1);
             gl.glMatrixMode(GL.GL_MODELVIEW); gl.glPushMatrix(); gl.glLoadIdentity();
@@ -92,7 +99,7 @@ public final class Screenshots {
                 pixels.flip(); gl.glDrawPixels(image.getWidth(), image.getHeight(), GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, pixels); gl.glFlush();
             } finally {
                 gl.glMatrixMode(GL.GL_MODELVIEW); gl.glPopMatrix(); gl.glMatrixMode(GL.GL_PROJECTION); gl.glPopMatrix();
-                gl.glPopAttrib(); gl.glMatrixMode(mode[0]);
+                gl.glPopAttrib(); gl.glMatrixMode(mode[0]);if(programmable)gl.glUseProgram(program[0]);
             }
         } finally { if (acquired) context.release(); }
     }

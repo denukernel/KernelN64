@@ -14,12 +14,12 @@ import plugin.GfxPlugin;
 public final class PluginSettings {
     static final String[] KEYS = { Video.GFX_PLUGIN, Audio.AUDIO_PLUGIN, Pif.CONTROLLER_PLUGIN };
     public static final String[][] CLASSES = {
-        { "gln64j.GLN64jPlugin", "cfb.CFBPlugin", "d3d11.D3D11Plugin" },
+        { "gln64j.GLN64jPlugin", "cfb.CFBPlugin", "d3d11.D3D11Plugin", "kernel64gl.Kernel64GLPlugin" },
         { "aziaudio.AziAudioPlugin", "basicaudio.BasicAudioPlugin" },
         { "basiccontroller.BasicKeyboardPlugin", "basiccontroller.NoControllerPlugin" }
     };
     static final String[][] NAMES = {
-        { "glN64j (recommended)", "CFB (framebuffer only)", "Direct3D 11 (experimental)" },
+        { "glN64j (recommended)", "CFB (framebuffer only)", "Direct3D 11 (experimental)", "Kernel64GL (java opengl)" },
         { "Azimer HLE Audio (recommended)", "Basic Audio (fallback)" },
         { "Basic Keyboard", "None (controller disconnected)" }
     };

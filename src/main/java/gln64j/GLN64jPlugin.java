@@ -121,8 +121,13 @@ public class GLN64jPlugin implements GfxPlugin {
         if (DEBUG) System.out.println("GFX Plugin (" + name + ") getPluginInfo.");
     }
     
+    protected void loadSettings() { GLN64jPluginSettings.load(); }
+
+    /** Called with the OpenGL context current, including after context recreation. */
+    public void configureContext(javax.media.opengl.GL gl, boolean created) {}
+
     public boolean initiateGfx(GfxInfo gfxInfo) {
-    	gln64j.config.GLN64jPluginSettings.load();
+        loadSettings();
         if (DEBUG) System.out.println("GFX Plugin (" + name + ") initiateGfx.");
         
         hWnd = gfxInfo.hWnd;

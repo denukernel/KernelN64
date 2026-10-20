@@ -85,6 +85,8 @@ public class OpenGl {
 
 		public void init(GLAutoDrawable gLDrawable) {
 			gl = gLDrawable.getGL();
+            if(kerneln64.Main.video!=null && kerneln64.Main.video.gfxPlugin instanceof GLN64jPlugin plugin)
+                plugin.configureContext(gl,true);
 
 
 			OpenGlGdp.init(gl);
@@ -95,6 +97,8 @@ public class OpenGl {
 
 		public void display(GLAutoDrawable gLDrawable) {
 			try {
+                if(kerneln64.Main.video!=null && kerneln64.Main.video.gfxPlugin instanceof GLN64jPlugin plugin)
+                    plugin.configureContext(gLDrawable.getGL(),false);
 				// 1. CLEAR the buffers immediately to stop the "ghosting" effect
 
                 renderDisplayList();

@@ -42,7 +42,7 @@ public final class SaveStates {
             if (field.isSynthetic() || Modifier.isStatic(modifiers) != statics
                     || Modifier.isFinal(modifiers) || field.getName().equals("running")) continue;
             if (Set.of("cachedOpcodes", "cachedOp", "tmpFPR", "cacheInstructions").contains(field.getName())) continue;
-            if (type == gln64j.rdp.textures.TextureCache.class && !Set.of("texture", "tiles", "texRect", "textureImage",
+            if ((type == gln64j.rdp.textures.TextureCache.class || type == kernel64gl.engine.rdp.textures.TextureCache.class) && !Set.of("texture", "tiles", "texRect", "textureImage",
                     "loadType", "paletteCRC16", "paletteCRC256", "textureMode", "tmem", "bgImage", "stateLoadTileIndex")
                     .contains(field.getName())) continue;
             Class<?> ft = field.getType();
@@ -83,11 +83,14 @@ public final class SaveStates {
             Object sound = aziaudio.AziAudioPlugin.stateAudio();
             collect(result, "audioPlayback", sound, sound.getClass(), false);
         }
-        // HLE graphics state contains matrices, lighting and tile state used across display lists.
-        if (gln64j.core.Rsp.gsp != null) collect(result, "gsp", gln64j.core.Rsp.gsp, gln64j.rsp.Gsp.class, false);
-        if (gln64j.core.Rsp.gdp != null) collect(result, "gdp", gln64j.core.Rsp.gdp, gln64j.rdp.Gdp.class, false);
-        collect(result, "textureCache", gln64j.opengl.OpenGlGdp.cache, gln64j.rdp.textures.TextureCache.class, false);
+        collectGraphics(result);
         return result;
+    }
+    private static void collectGraphics(List<Leaf> fields)throws ReflectiveOperationException {
+        Object gsp=GraphicsState.gsp(),gdp=GraphicsState.gdp(),cache=GraphicsState.cache();
+        if(gsp!=null)collect(fields,"gsp",gsp,gsp.getClass(),false);
+        if(gdp!=null)collect(fields,"gdp",gdp,gdp.getClass(),false);
+        if(cache!=null)collect(fields,"textureCache",cache,cache.getClass(),false);
     }
     // Field labels are part of v1-v3 state files, not the current Java namespace.
     // Keep their original spelling so package refactors do not invalidate saves.
@@ -235,9 +238,7 @@ public final class SaveStates {
                 Main.cheats.restoreUndo(undo,Main.mem.RDRAM);
                 Main.video.resetTimer();
                 if (Main.audio.audioPlugin instanceof aziaudio.AziAudioPlugin) aziaudio.AziAudioPlugin.stateAudio().flushOutput();
-                if (gln64j.core.Rsp.gsp != null) gln64j.core.Rsp.gsp.changed = -1;
-                if (gln64j.core.Rsp.gdp != null) gln64j.core.Rsp.gdp.changed = -1;
-                gln64j.opengl.OpenGlGdp.cache.stateLoaded();
+                GraphicsState.restored();
                 Main.rsp.lastValidAudioTaskTime = System.currentTimeMillis();
             } catch (ReflectiveOperationException e) { throw new IOException("Cannot restore emulator state", e); }
             finally { if (!restored) Main.cpu.cop1.setMode32(previousMode); }
@@ -249,9 +250,9 @@ public final class SaveStates {
         try {
             Map<String,byte[]> result=new LinkedHashMap<>();
             List<Leaf> fields=new ArrayList<>();
-            collect(fields,"gsp",gln64j.core.Rsp.gsp,gln64j.rsp.Gsp.class,false);
-            collect(fields,"gdp",gln64j.core.Rsp.gdp,gln64j.rdp.Gdp.class,false);
-            collect(fields,"textureCache",gln64j.opengl.OpenGlGdp.cache,gln64j.rdp.textures.TextureCache.class,false);
+            collectGraphics(fields);
+
+
             for(Leaf leaf:fields) {
                 if(leaf.name.endsWith(".rdram") || leaf.name.endsWith(".dmem"))continue;
                 ByteArrayOutputStream data=new ByteArrayOutputStream();
@@ -263,9 +264,9 @@ public final class SaveStates {
     public static void graphicsState(Map<String,byte[]> state) throws IOException {
         try {
             List<Leaf> fields=new ArrayList<>();
-            collect(fields,"gsp",gln64j.core.Rsp.gsp,gln64j.rsp.Gsp.class,false);
-            collect(fields,"gdp",gln64j.core.Rsp.gdp,gln64j.rdp.Gdp.class,false);
-            collect(fields,"textureCache",gln64j.opengl.OpenGlGdp.cache,gln64j.rdp.textures.TextureCache.class,false);
+            collectGraphics(fields);
+
+
             for(Leaf leaf:fields) {
                 byte[] data=state.get(leaf.name);if(data==null)continue;
                 Object value=readValue(new DataInputStream(new ByteArrayInputStream(data)),leaf.field.getType()),current=leaf.get();
@@ -276,14 +277,13 @@ public final class SaveStates {
                 else if(current!=null && value!=null && current.getClass().isArray() && Array.getLength(current)==Array.getLength(value))System.arraycopy(value,0,current,0,Array.getLength(value));
                 else leaf.field.set(leaf.owner,value);
             }
-            gln64j.core.Rsp.gsp.changed=gln64j.core.Rsp.gdp.changed=-1;
-            gln64j.opengl.OpenGlGdp.cache.stateLoaded();
+            GraphicsState.restored();
         } catch(ReflectiveOperationException error){throw new IOException(error);}
     }
 
     private static boolean graphicsCompatible(String saved, String active) {
         if (saved.equals(active)) return true;
-        Set<String> sharedHle = Set.of("gln64j.GLN64jPlugin", "d3d11.D3D11Plugin");
+        Set<String> sharedHle = Set.of("gln64j.GLN64jPlugin", "d3d11.D3D11Plugin", "kernel64gl.Kernel64GLPlugin");
         return sharedHle.contains(saved) && sharedHle.contains(active);
     }
 

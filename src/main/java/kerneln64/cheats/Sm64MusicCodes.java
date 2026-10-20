@@ -25,8 +25,41 @@ final class Sm64MusicCodes {
             entry("Gag me with a rake - dissonance (approximation)",rake,
                 "Scrambles the note scale with repeating -12, +7, -5, +12, -7, +1, +10, -10, +5, -2, +8, -6 semitone offsets. Keeps the current song tempo. This bends the melody; it does not reproduce corrupted instrument samples."),
             entry("Gag me with a rake - fast dissonance (approximation)",rake+"\n"+tempoCode(240),
-                "Combines the dissonant note scale with 240 BPM background/secondary music.")
+                "Combines the dissonant note scale with 240 BPM background/secondary music."),
+            variation("slow music - 72 bpm",tempoCode(72),
+                "sets background and secondary music to 72 bpm without changing note pitch."),
+            variation("steady pulse - 180 bpm",tempoCode(180),
+                "sets background and secondary music to 180 bpm without changing note pitch."),
+            variation("deep space bass - 72 bpm",pitch(i->Sm64AudioCodes.FREQUENCIES[i]*0.25)+"\n"+tempoCode(72),
+                "lowers new notes by two octaves and sets background and secondary music to 72 bpm."),
+            variation("tiny arcade - 216 bpm",pitch(i->Sm64AudioCodes.FREQUENCIES[i]*1.5)+"\n"+tempoCode(216),
+                "multiplies new note pitch by 1.5 and sets background and secondary music to 216 bpm."),
+            variation("whole tone staircase",shift(i->-(i%2)),
+                "maps odd note numbers down one semitone, pairing adjacent notes into a whole tone scale. keeps the current tempo."),
+            variation("tritone seesaw",shift(i->i%2==0?-6:6),
+                "alternates new notes six semitones down and up by note number. keeps the current tempo."),
+            variation("octave carousel",shift(i->(i%3-1)*12),
+                "repeats low, original and high octaves by note number. keeps the current tempo."),
+            variation("detuned clockwork - 168 bpm",shift(i->i%2==0?-0.25:0.25)+"\n"+tempoCode(168),
+                "alternates new notes a quarter semitone flat and sharp, with background and secondary music at 168 bpm.")
         );
+    }
+    private static String pitch(java.util.function.IntToDoubleFunction value) {
+        return Sm64AudioCodes.pitchCode(value);
+    }
+    private static String shift(java.util.function.IntToDoubleFunction semitones) {
+        return pitch(i->Sm64AudioCodes.FREQUENCIES[i]*Math.pow(2,semitones.applyAsDouble(i)/12.0));
+    }
+    private static CheatRepository.Entry variation(String name,String code,String behavior) {
+        return new CheatRepository.Entry("Audio\\Music experiments\\"+name,
+            "sm64 us v1.0 / verified compatible us-based extensions only. "+behavior
+            +" these are pitch and tempo variations, not corrupted samples or a match to a reference recording."
+            +" enable after boot with music playing. new notes use the changed scale; sampled percussion can remain unchanged and high notes can reach the resampling limit."
+            +" tempo writes affect music players 0 and 1, leaving the sound-effect player tempo alone. pitch-table changes can also affect pitched sound effects."
+            +" up to four audio effects can mix supported pitch tables; different tempo values conflict. disabling restores owned bytes, while held notes can finish at the changed pitch."
+            +" chained layout guards require the verified us audio readers; physical gamesharks and other engines are untested."
+            +" source: https://github.com/n64decomp/sm64/tree/9921382a68bb0c865e5e45eb594d9c64db59b1af/src/audio (data.c, seqplayer.c, internal.h).",
+            code,false,"sound");
     }
     private static CheatRepository.Entry entry(String name,String code,String behavior) {
         return new CheatRepository.Entry("Audio\\Music experiments\\"+name,

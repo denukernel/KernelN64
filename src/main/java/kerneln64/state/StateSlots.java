@@ -17,10 +17,25 @@ public final class StateSlots {
     public StateSlots(Path saveRoot, File rom, String hash) throws IOException {
         if (rom == null || hash == null || !hash.matches("[0-9a-fA-F]{64}"))
             throw new IllegalArgumentException("Open a ROM before selecting a state slot.");
-        this.saveRoot=saveRoot.toAbsolutePath().normalize();this.rom=rom;this.hash=hash;
-        directory=this.saveRoot.resolve("States").resolve(hash.toLowerCase(Locale.ROOT));
+        this.saveRoot=saveRoot.toAbsolutePath().normalize();this.rom=rom;this.hash=hash.toLowerCase(Locale.ROOT);
+        directory=readableDirectory(this.saveRoot.resolve("States"));
         metadata=directory.resolve("slots.properties");
         if(Files.exists(metadata))try(var in=Files.newInputStream(metadata)){settings.load(in);}
+        else {
+            // Copy old hash-based slots once. Originals remain available for older builds.
+            Path legacy=this.saveRoot.resolve("States").resolve(this.hash);
+            Path legacyMetadata=legacy.resolve("slots.properties");
+            if(Files.exists(legacyMetadata))try(var in=Files.newInputStream(legacyMetadata)){settings.load(in);}
+            String savedHash=settings.getProperty("rom.sha256",this.hash);
+            if(!savedHash.equalsIgnoreCase(this.hash))throw new IOException("Legacy state folder belongs to a different ROM.");
+            Files.createDirectories(directory);
+            for(int slot=1;slot<=COUNT;slot++) {
+                String filename=String.format(Locale.ROOT,"slot%02d.j64state",slot);
+                Path source=legacy.resolve(filename);
+                if(Files.exists(source))Files.copy(source,directory.resolve(filename));
+            }
+            persist(copy());
+        }
     }
     public static synchronized StateSlots current() throws IOException {
         Path root=Path.of(Main.AUTO_SAVE_DIR).toAbsolutePath().normalize();
@@ -55,6 +70,25 @@ public final class StateSlots {
         persist(next);
     }
     private Properties copy(){Properties p=new Properties();p.putAll(settings);return p;}
+    private Path readableDirectory(Path states) throws IOException {
+        String name=rom.getName().replaceAll("[\\x00-\\x1f<>:\"/\\\\|?*]","_")
+            .replaceAll("[ .]+$","");
+        if(name.isBlank())name="rom";
+        if(name.length()>120)name=name.substring(0,120).replaceAll("[ .]+$","");
+        if(name.matches("(?i)(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?"))name="_"+name;
+        // Only same-name ROMs with different contents need an identity suffix.
+        for(String suffix:new String[]{""," ["+hash.substring(0,12)+"]"," ["+hash+"]"}) {
+            Path candidate=states.resolve(name+suffix);
+            if(!Files.exists(candidate))return candidate;
+            Path info=candidate.resolve("slots.properties");
+            if(Files.isRegularFile(info)) {
+                Properties stored=new Properties();
+                try(var in=Files.newInputStream(info)){stored.load(in);}
+                if(hash.equalsIgnoreCase(stored.getProperty("rom.sha256")))return candidate;
+            }
+        }
+        throw new IOException("Cannot find an unused save-state folder for "+rom.getName());
+    }
     private void persist(Properties next) throws IOException {
         next.setProperty("rom.name",rom.getName());next.setProperty("rom.sha256",hash);
         Files.createDirectories(directory);Path temp=Files.createTempFile(directory,"slots-",".tmp");

@@ -76,7 +76,7 @@ def main():
     for name in ["jogl.jar", "gluegen-rt.jar", "jogl.dll", "jogl_awt.dll", "jogl_cg.dll", "gluegen-rt.dll", "KernelN64D3D11.dll"]:
         copy(ROOT / "KernelN64winportable" / name, repository / "KernelN64winportable" / name)
     copy(ROOT / "docs/Release-README.md", repository / "README.md")
-    for name in ["Source-layout.md", "SM64-decomp-cheats.md", "GameShark-firmware.md", "GLN64j-compatibility.md", "Release-preparation.md", "Release-README.md", "Portable-README.md"]:
+    for name in ["Source-layout.md", "SM64-decomp-cheats.md", "GameShark-firmware.md", "GLN64j-compatibility.md", "Kernel64GL.md", "Release-preparation.md", "Release-README.md", "Portable-README.md"]:
         text = (ROOT / "docs" / name).read_text(encoding="utf-8")
         if name in {"SM64-decomp-cheats.md", "GameShark-firmware.md"}:
             text = text.split("\n## Verification\n")[0]

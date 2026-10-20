@@ -12,7 +12,7 @@ KernelN64.exe --rom "C:\Games\Example.z64" --state "C:\States\scene.j64state"
 KernelN64.exe --check
 ```
 
-Use **Settings > Settings... > Plugins** to select GLN64j or experimental Direct3D 11 graphics. F4 toggles configured fast mode. F5 saves and F7 loads the selected state slot; numbered slots are available from the menu.
+Use **Settings > Settings... > Plugins** to select GLN64j, Kernel64GL, or experimental Direct3D 11 graphics. F4 toggles configured fast mode. F5 saves and F7 loads the selected state slot; numbered slots are available from the menu.
 
 The F4 target is a speed ceiling; achievable speed depends on your computer and the game. Hold Shift for temporary uncapped turbo; releasing it restores normal speed or the active F4 mode. The audio plugin's **Mute during fast-forward** option provides silent fast mode, with normal audio restored when fast mode ends.
 
@@ -35,3 +35,7 @@ Testing does not guarantee full compatibility or a complete playthrough. Mario K
 ![Super Mario 64 gameplay](assets/screenshots/super-mario-64-gameplay.png)
 
 Matching source is provided in the source ZIP distributed with this package. See `COPYING`, `THIRD-PARTY-NOTICES.md`, `licenses/`, and the Java runtime's `runtime/legal/` notices. Original source-file terms remain applicable, including inherited Project64 notices.
+
+## Kernel64GL settings
+
+select the plugin and apply before configuring it. saved settings apply when the rom is reopened. see [the plugin guide](docs/Kernel64GL.md).

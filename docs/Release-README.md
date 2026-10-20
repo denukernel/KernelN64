@@ -2,7 +2,7 @@
 
 <img src="assets/kerneln64-icon-source.png" width="128" alt="KernelN64 K64 icon">
 
-KernelN64 is a Windows Nintendo 64 emulator based on Jario64, with an Eclipse-friendly Java core, GLN64j graphics, experimental Direct3D 11 graphics, and Azimer HLE audio.
+KernelN64 is a Windows Nintendo 64 emulator based on Jario64, with an Eclipse-friendly Java core, GLN64j graphics, independent Kernel64GL shader graphics, experimental Direct3D 11 graphics, and Azimer HLE audio.
 
 This is a **development preview**. Super Mario 64 and Mario Kart 64 are tested games in the **Good** tier. GameShark Pro 2.0 and 3.3 firmware ROMs are also tested, both in the **Okay** tier. All other games and firmware versions remain untested. No game ROMs, firmware ROMs, saves or game assets are included.
 
@@ -11,7 +11,7 @@ This is a **development preview**. Super Mario 64 and Mario Kart 64 are tested g
 | Game | Status | Testing coverage |
 | --- | --- | --- |
 | Super Mario 64 | Tested — Good | Has received the most local testing. |
-| Mario Kart 64 | Tested — Good | USA version tested with GLN64j and experimental D3D11 using attract-mode race savestate replays, framebuffer comparisons, save/load checks, and ABI2 audio resampler checks. |
+| Mario Kart 64 | Tested — Good | USA version tested with GLN64j, Kernel64GL and experimental D3D11 using attract-mode race savestate replays, framebuffer comparisons, save/load checks, and ABI2 audio resampler checks. |
 | GameShark Pro 2.0 firmware ROM | Tested — Okay | Standalone firmware support; physical pass-through cartridge behavior is not emulated. |
 | GameShark Pro 3.3 firmware ROM | Tested — Okay | Standalone firmware support; physical pass-through cartridge behavior is not emulated. |
 | All other games and firmware versions, including Zelda titles | Untested | Compatibility has not been verified. |
@@ -34,14 +34,29 @@ User-captured scenes from the two tested games. These screenshots show specific 
 
 ![Super Mario 64 castle exterior running in KernelN64](assets/screenshots/super-mario-64-castle.png)
 
+### Debug Tools
+<img width="1103" height="861" alt="image" src="https://github.com/user-attachments/assets/8a40e579-8f28-4b53-b502-59de963caac6" />
+
+### Firmware
+<img width="1919" height="1028" alt="image" src="https://github.com/user-attachments/assets/f4747a29-08bf-4d04-b4c5-c439f6f13ab8" />
+
+
 ## Features
 
-* GLN64j and experimental native Direct3D 11 graphics, with live graphics/audio/input plugin switching.
+* GLN64j, independent Kernel64GL, and experimental native Direct3D 11 graphics, with live graphics/audio/input plugin switching.
 * HLE audio, configurable fast mode, controller mapping and window settings.
 * Savestates with numbered/named slots, file import/export and rewind.
 * GameShark cheats, SM64 presets and address mapping for supported SM64 decomp builds with a matching ELF.
 * CPU debugger, memory tools and a guest kernel thread monitor with audio handshake diagnostics.
 * Recent ROMs and an EXE launcher for external tools.
+
+## Kernel64GL graphics
+
+select **Kernel64GL (java opengl)** under **settings > settings > plugins**, apply,
+then configure the active graphics plugin. its independent java decoder and GLSL
+renderer have separate resolution, filtering, fog, wireframe,
+window and vsync settings in `Kernel64GL.config`. saved settings apply when the rom
+is reopened. see [the plugin guide](docs/Kernel64GL.md) for details and testing limits.
 
 ## Run the portable release
 

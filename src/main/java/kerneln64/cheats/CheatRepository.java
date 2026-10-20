@@ -34,7 +34,7 @@ public final class CheatRepository {
             entries.addAll(forBuild(List.of(new Entry(Sm64HeadStretch.NAME,Sm64HeadStretch.NOTES,Sm64HeadStretch.CODES,false,""))));
         if(sm64 && !text.contains("# SM64 expanded preset catalog v2"))
             for(Entry preset:forBuild(Sm64ExtraCodes.presets()))if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);
-        if(sm64 && !text.contains("# SM64 music presets v1"))
+        if(sm64 && !text.contains("# SM64 music presets v2"))
             for(Entry preset:forBuild(Sm64MusicCodes.presets()))if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);
         if(Main.decompCheats!=null)Main.decompCheats.prepare(entries);
         if(Main.decompCheatsRejected)for(var entry:entries)entry.enabled=false;
@@ -76,7 +76,7 @@ public final class CheatRepository {
         }
     }
     public static String serialize(List<Entry> entries) {
-        StringBuilder out=new StringBuilder("# KernelN64 named GameShark codes\n# Mario-head stretch preset v1\n# SM64 expanded preset catalog v2\n# SM64 music presets v1\n");
+        StringBuilder out=new StringBuilder("# KernelN64 named GameShark codes\n# Mario-head stretch preset v1\n# SM64 expanded preset catalog v2\n# SM64 music presets v2\n");
         for(Entry e:entries)out.append("[CHEAT]\nNAME=").append(e.name.replace('\n',' ')).append("\nNOTE=").append(e.notes.replace("\n","\\n")).append("\nGROUP=").append(e.group).append("\nADDRESSING=").append(e.addressing).append("\nENABLED=").append(e.enabled).append('\n').append(e.codes.strip()).append("\n\n");
         return out.toString();
     }

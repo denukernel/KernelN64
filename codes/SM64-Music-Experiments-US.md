@@ -13,10 +13,52 @@ approximations from the described effects. The video audio was not measured or
 matched. The rake presets change note pitches; they do not recreate corrupted
 instrument samples, sample clipping, or the original ROM corruption.
 
-The companion `.cheats.txt` file contains all four presets for import, disabled.
+the companion `.cheats.txt` file contains all twelve presets for import, disabled.
 They appear automatically in existing SM64 cheat lists on the next load, with
-custom entries and enabled selections retained. They share the existing `sound`
-exclusive group with other Audio presets. Select only one at a time.
+custom entries and enabled selections retained. they use the existing `sound`
+category. up to four audio effects can be selected within the operation budget.
+supported pitch tables mix their relative changes; different tempo values conflict.
+
+## eight additional variations
+
+| preset | note pitch | music tempo |
+| --- | --- | --- |
+| slow music - 72 bpm | unchanged | 72 bpm |
+| steady pulse - 180 bpm | unchanged | 180 bpm |
+| deep space bass - 72 bpm | two octaves down | 72 bpm |
+| tiny arcade - 216 bpm | multiply by 1.5 | 216 bpm |
+| whole tone staircase | odd note numbers move down one semitone | current tempo |
+| tritone seesaw | alternate six semitones down and up by note number | current tempo |
+| octave carousel | repeat minus twelve, zero and plus twelve semitones by note number | current tempo |
+| detuned clockwork - 168 bpm | alternate a quarter semitone flat and sharp by note number | 168 bpm |
+
+these are deterministic pitch and tempo variations. alternating patterns depend
+on note number, not elapsed time. they do not modify sample data, reproduce a
+reference recording, or add an audio processing filter. pitched sound effects
+that read the same frequency table can change too; sound-effect tempo is untouched.
+
+the added tempo halfwords are `0D80`, `21C0`, `2880` and `1F80` for 72, 180,
+216 and 168 bpm respectively, each multiplied by 48. they use the same verified
+player offsets and reader guards described below. the pitch-only variants write
+the existing 128-float table at guest address `80333994`, with the same guards.
+no new absolute addresses or instruction patches are introduced.
+
+catalog version 2 adds the eight entries to saved version 1 lists by name,
+preserving existing entries and selections. repeated loads do not duplicate them.
+
+the eight additions were tested in kerneln64 with gln64j and azimer hle audio,
+using the verified us-based extended rom and an 8 mib bob-omb battlefield state.
+each replay ran for 180 vi events, with 131072 bytes captured from guest ai dma
+buffers after the first 30 vi events. all eight captures were nonzero and differed
+from the baseline and one another. live pitch and tempo writes matched the preset,
+and disabling restored the note table and music tempo. the input state was preserved.
+this checks live synthesis and memory behavior, not listening quality, full-game
+coverage, other regions, physical gamesharks, or other emulator conditional scopes.
+
+local checks also cover write bounds, finite positive pitch values, every reader
+guard halfword, sound-effect tempo isolation, undo, catalog migration, supported
+pitch mixing and conflicting tempos. testing files and captures are excluded from
+the source checkout and release archives.
 
 ## Target and address evidence
 

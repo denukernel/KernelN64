@@ -52,9 +52,8 @@ public final class LivePlugins {
         float[] environment=null,primitive=null;int minimum=0;
         if(type==0) {
             d3d11.framebuffer.D3DFramebuffers.capture();graphics=SaveStates.graphicsState();
-            var combiner=gln64j.opengl.OpenGlGdp.combiners; mux=combiner.combine.getMux();
-            environment=gln64j.rdp.combiners.Combiners.envColor.clone();
-            var p=gln64j.rdp.combiners.Combiners.primColor;primitive=new float[]{p.r,p.g,p.b,p.a,p.l};minimum=p.m;
+            var appearance=kerneln64.state.GraphicsState.appearance();
+            mux=appearance.mux();environment=appearance.environment();primitive=appearance.primitive();minimum=appearance.minimum();
         }
         try { close(type);open(type,name); }
         catch(Exception | LinkageError error) {
@@ -68,9 +67,7 @@ public final class LivePlugins {
     }
     private static void restoreGraphics(Map<String,byte[]> graphics,long mux,float[] environment,float[] primitive,int minimum)throws IOException {
         SaveStates.graphicsState(graphics);
-        gln64j.opengl.OpenGlGdp.combiners.combine.setMuxs0((int)(mux>>>32));gln64j.opengl.OpenGlGdp.combiners.combine.setMuxs1((int)mux);
-        System.arraycopy(environment,0,gln64j.rdp.combiners.Combiners.envColor,0,4);
-        var p=gln64j.rdp.combiners.Combiners.primColor;p.r=primitive[0];p.g=primitive[1];p.b=primitive[2];p.a=primitive[3];p.l=primitive[4];p.m=minimum;
+        kerneln64.state.GraphicsState.appearance(new kerneln64.state.GraphicsState.Appearance(mux,environment,primitive,minimum));
     }
     private static void close(int type) {
         if(type==0){Main.video.gfxPlugin.romClosed();Main.video.gfxPlugin.closePlugin();}

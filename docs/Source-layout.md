@@ -28,6 +28,7 @@ This prepared source snapshot omits automated testing files and local fixtures.
 | `gln64j.rdp.textures` | Texture decoding, transfers, caching and uploads |
 | `gln64j.rdp.combiners` | Combiner state, mux tables and stage simplification |
 | `gln64j.config`, `gln64j.debug` | Settings and graphics tracing |
+| `kernel64gl`, `kernel64gl.engine`, `kernel64gl.renderer` | Independent Kernel64GL plugin, decoder, graphics state, texture cache, batching and GLSL color combiner; source fork with inherited credits |
 | `d3d11.bridge` | HLE drawing API translation and native combiner selection |
 | `d3d11.framebuffer` | GPU targets, RDRAM feedback and framebuffer invalidation |
 | `d3d11.config` | Direct3D settings |
@@ -47,6 +48,20 @@ The large `D3DGL.java` consists entirely of generated interface forwarding. Its 
 
 Audio ABI state declarations and playback state field names remain stable. Savestates use the original `aziaudio.HLEMain` and `aziaudio.ABI1`/`ABI2`/`ABI3` field labels regardless of the source packages.
 
-Savestate field identifiers retain their historical names independently of Java packages. Keep those identifiers stable when moving classes; existing `.j64state` files must remain readable. ROM hashes, cheat file paths and save directories are unchanged.
+Savestate field identifiers retain their historical names independently of Java packages. Keep those identifiers stable when moving classes; existing `.j64state` files must remain readable. ROM hashes and cheat file paths are unchanged.
+
+numbered savestate slots use readable rom filenames, for example
+`Save/States/CorruptedROM.z64/slot01.j64state`. a short rom hash suffix is used
+only when the readable folder is already occupied by another rom or unidentified
+data. full hashes remain in `slots.properties` and inside states to prevent loading
+states for different rom contents. reserved and invalid windows filename characters
+are sanitized.
+
+when a rom first opens with the new layout, `StateSlots` copies its old hash-folder
+slots, selection and custom names into the readable folder. the old folder stays
+intact for older builds; subsequent opens use the readable folder and preserve
+newer saves there. legacy quick states in `Save/<rom filename>.j64state` keep their
+existing paths. roms with different filenames have separate readable folders,
+even if their contents match.
 
 After refreshing the project in Eclipse, use **Project > Clean** if Eclipse still lists classes at their old locations. `launcher/Build.ps1` rebuilds the distribution and refreshes Eclipse's compiled output, removing stale classes from the old package layout.

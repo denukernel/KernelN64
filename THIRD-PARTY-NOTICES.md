@@ -2,6 +2,8 @@
 
 KernelN64 contains inherited code and dependencies with their own notices. Copyright and license headers in source files are preserved.
 
+the independent Kernel64GL engine under `src/main/java/kernel64gl/engine` is a source fork of the existing gln64j/glN64-derived java implementation. original source headers and applicable inherited terms remain attached to those files. the separate renderer and shader work does not replace upstream attribution or licensing.
+
 * **Jario64 / Jason LaDere and contributors:** GPL version 3 or later notices appear in the Java sources. The complete GPL v3 text is in `COPYING`.
 * **Project64 / zilmar and Jabo:** some inherited files also contain the original Project64 notice, including noncommercial-use terms. A verbatim copy is in `licenses/Project64-notice.txt`. These inherited notices require review before choosing a repository-wide license; this document does not replace or resolve them.
 * **Azimer audio:** inherited attribution remains in the audio HLE sources.

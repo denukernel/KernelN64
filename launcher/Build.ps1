@@ -29,7 +29,7 @@ Get-ChildItem $sourceRoot -Recurse -File | Where-Object { $_.Extension -in '.png
 # Eclipse's checked-in .classpath runs target/classes. Refresh it from the same
 # complete compilation as app.jar, including resources and newly added helpers.
 # Replace the core namespace output so moved classes cannot linger in Eclipse.
-foreach ($legacyRelative in @('target/classes/jario64', 'target/test-classes/jario64', 'target/classes/kerneln64', 'target/test-classes/kerneln64', 'target/classes/gln64j', 'target/classes/d3d11', 'target/classes/aziaudio', 'target/classes/jario64plus', 'target/classes/debug', 'target/test-classes/gln64j', 'target/test-classes/d3d11', 'target/test-classes/aziaudio')) {
+foreach ($legacyRelative in @('target/classes/jario64', 'target/test-classes/jario64', 'target/classes/kerneln64', 'target/test-classes/kerneln64', 'target/classes/gln64j', 'target/classes/d3d11', 'target/classes/kernel64gl', 'target/test-classes/kernel64gl', 'target/classes/aziaudio', 'target/classes/jario64plus', 'target/classes/debug', 'target/test-classes/gln64j', 'target/test-classes/d3d11', 'target/test-classes/aziaudio')) {
     $legacyOutput = [IO.Path]::GetFullPath((Join-Path $projectRoot $legacyRelative))
     $targetBoundary = [IO.Path]::GetFullPath((Join-Path $projectRoot 'target')) + [IO.Path]::DirectorySeparatorChar
     if (-not $legacyOutput.StartsWith($targetBoundary, [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid legacy class output' }
