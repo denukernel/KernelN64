@@ -184,6 +184,7 @@ public class Combiners {
     public static class CachedCombiner {
         
         public gDPCombine combine = new gDPCombine();
+        public boolean twoCycle;
         public CompiledCombiner compiled;
         public CachedCombiner left;
         public CachedCombiner right;
@@ -346,9 +347,11 @@ public class Combiners {
         while (comb != null) {
             parent = comb;
 
-            if (mux == comb.combine.getMux())
+            int order = Long.compare(mux, comb.combine.getMux());
+            if (order == 0) order = Boolean.compare(twocycle, comb.twoCycle);
+            if (order == 0)
                 break;
-            else if (mux < comb.combine.getMux())
+            else if (order < 0)
                 comb = comb.left;
             else
                 comb = comb.right;
@@ -359,7 +362,8 @@ public class Combiners {
 
             if (parent == null)
                 root = comb;
-            else if (parent.combine.getMux() > comb.combine.getMux())
+            else if (mux < parent.combine.getMux() ||
+                    (mux == parent.combine.getMux() && !twocycle && parent.twoCycle))
                 parent.left = comb;
             else
                 parent.right = comb;
@@ -439,6 +443,7 @@ public class Combiners {
         CachedCombiner cached = new CachedCombiner();
 
         cached.combine.setMux(newcombine.getMux());
+        cached.twoCycle = twocycle;
         cached.left = null;
         cached.right = null;
 

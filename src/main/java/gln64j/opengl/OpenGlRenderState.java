@@ -34,6 +34,9 @@ final class OpenGlRenderState {
     private OpenGlRenderState() {}
 
 	static void OGL_GdpUpdateStates()  {
+        if ((Rsp.gdp.changed & Gdp.CHANGED_VIEWPORT) != 0) updateViewport();
+        if ((Rsp.gdp.changed & Gdp.CHANGED_FOGCOLOR) != 0)
+            gl.glFogfv(GL.GL_FOG_COLOR, Rsp.gdp.fogColor, 0);
         if ((Rsp.gdp.changed & Gdp.CHANGED_RENDERMODE) != 0) {
 
             if (Gdp.RDP_GETOM_Z_COMPARE_EN(Rsp.gdp.otherMode) != 0)
@@ -110,7 +113,8 @@ final class OpenGlRenderState {
 
                 combiners.setCombine(gl, Gdp.RDP_GETOM_CYCLE_TYPE(Rsp.gdp.otherMode) == Gbi.G_CYC_2CYCLE, combiners.combine.getMux());
             }
-            Rsp.gdp.changed |= Gdp.CHANGED_COMBINE_COLORS;
+            // A new combiner can start using a texture unit that was previously dummy-bound.
+            Rsp.gdp.changed |= Gdp.CHANGED_COMBINE_COLORS | Gdp.CHANGED_TEXTURE;
         }
         
         if ((Rsp.gdp.changed & Gdp.CHANGED_COMBINE_COLORS) != 0) {
@@ -158,7 +162,7 @@ final class OpenGlRenderState {
                 gl.glEnable(GL.GL_BLEND);
                 
 
-                switch (Rsp.gdp.otherMode.w1 >> 16) {
+                switch (Rsp.gdp.otherMode.w1 >>> 16) {
                     case 0x0448: // Add
                     case 0x055A:
                         gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE);
@@ -189,8 +193,8 @@ final class OpenGlRenderState {
             
 
             if (Gdp.RDP_GETOM_CYCLE_TYPE(Rsp.gdp.otherMode) == Gbi.G_CYC_FILL) {
-                gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-                gl.glEnable(GL.GL_BLEND);
+                // Fill writes the packed color directly, including colors with zero alpha.
+                gl.glDisable(GL.GL_BLEND);
             }
         }
         

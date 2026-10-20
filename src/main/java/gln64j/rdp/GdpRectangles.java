@@ -48,49 +48,29 @@ final class GdpRectangles {
             OpenGlGdp.OGL_DrawRect(ulx,uly,lrx,lry,color,state.RDP_GETOM_Z_SOURCE_SEL(state.otherMode));
             state.colorImage.changed=true;state.colorImage.height=Math.max(state.colorImage.height,lry);return;
         }
+        OpenGlGdp.OGL_DrawTriangles();
+        // A fill directed at the Z image clears depth, regardless of its color.
+        // In particular, 0xFFFCFFFC is the normal far-depth clear, not a flash.
+        if (state.depthImageAddress == state.colorImage.address) {
+            OpenGlGdp.OGL_ClearDepthBuffer(state.RDP_GETOM_Z_UPDATE_EN(state.otherMode) != 0);
+            return;
+        }
         DepthBufferStack.DepthBuffer buffer = state.depthBuffers.findBuffer(state.colorImage.address);
      // 1. Clamp corrupted coordinates to visible screen bounds
         ulx = state.clampX(ulx); uly = state.clampY(uly);
         lrx = state.clampX(lrx); lry = state.clampY(lry);
 
         // 2. Identify the active color
-        float[] activeColorTemp = (state.RDP_GETOM_CYCLE_TYPE(state.otherMode) == Gbi.G_CYC_FILL) ? state.fillColor.color : state.blendColor;
-        float[] activeColor = new float[] { activeColorTemp[0], activeColorTemp[1], activeColorTemp[2], 1.0f };
-
-        // 3. WHITE FLASH SUPPRESSOR: 
-        // Detect if this covers >95% of the screen and is pure white
-        if (lrx - ulx >= OpenGlGdp.screenWidth - 10 && lry - uly >= OpenGlGdp.screenHeight - 10) {
-            if (activeColor[0] > 0.95f && activeColor[1] > 0.95f && activeColor[2] > 0.95f) {
-                
-                return; // Skip drawing the blinding rectangle
-            }
-            
-            // If it's a full-screen fill but NOT pure white, treat as clear
-            OpenGlGdp.OGL_ClearColorBuffer(activeColor);
-            return;
-        }
-
-        OpenGlGdp.OGL_DrawRect(ulx, uly, lrx, lry, activeColor, state.RDP_GETOM_Z_SOURCE_SEL(state.otherMode));
+        float[] activeColor = (state.RDP_GETOM_CYCLE_TYPE(state.otherMode) == Gbi.G_CYC_FILL)
+                ? state.fillColor.color
+                : new float[] { Combiners.primColor.r, Combiners.primColor.g, Combiners.primColor.b, Combiners.primColor.a };
         if (buffer != null)
             buffer.cleared = true;
         
-        if (state.depthImageAddress == state.colorImage.address) {
-
-            OpenGlGdp.OGL_ClearDepthBuffer(state.RDP_GETOM_Z_UPDATE_EN(state.otherMode) != 0);
-            return;
-        }
-        
-
         if (state.RDP_GETOM_CYCLE_TYPE(state.otherMode) == Gbi.G_CYC_FILL) {
             lrx++;
             lry++;
             
-            // ⭐ IMPROVED DETECTION: 
-            // Star Select background often fills 320x240 or slightly less.
-            if (lrx - ulx >= OpenGlGdp.screenWidth - 5 && lry - uly >= OpenGlGdp.screenHeight - 5) {
-                OpenGlGdp.OGL_ClearColorBuffer(activeColor);
-                return;
-            }
         }
         
 

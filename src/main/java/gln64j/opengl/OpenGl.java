@@ -26,6 +26,7 @@ import gln64j.core.Gbi;
 import gln64j.core.Rsp;
 
 import gln64j.rsp.Gsp;
+import gln64j.rdp.combiners.Combiners;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.nio.FloatBuffer;
@@ -248,7 +249,9 @@ public class OpenGl {
 		if ((Rsp.gsp.geometryMode & Gbi.G_CULL_BOTH) != 0) {
 			gl.glEnable(GL.GL_CULL_FACE);
 
-			if ((Rsp.gsp.geometryMode & Gbi.G_CULL_BACK) != 0)
+			if ((Rsp.gsp.geometryMode & Gbi.G_CULL_BOTH) == Gbi.G_CULL_BOTH)
+                gl.glCullFace(GL.GL_FRONT_AND_BACK);
+			else if ((Rsp.gsp.geometryMode & Gbi.G_CULL_BACK) != 0)
 				gl.glCullFace(GL.GL_BACK);
 			else
 				gl.glCullFace(GL.GL_FRONT);
@@ -258,7 +261,8 @@ public class OpenGl {
 
 	public static void OGL_GspUpdateStates() {
 		// Fog toggle
-		if (GLN64jPluginSettings.enableFog)
+		if (GLN64jPluginSettings.enableFog && Combiners.EXT_fog_coord
+                && (Rsp.gsp.geometryMode & Gbi.G_FOG) != 0)
 			gl.glEnable(GL.GL_FOG);
 		else
 			gl.glDisable(GL.GL_FOG);
@@ -271,6 +275,7 @@ public class OpenGl {
 
 		// Geometry mode (same as before except fog removed)
 		if ((Rsp.gsp.changed & Gsp.CHANGED_GEOMETRYMODE) != 0) {
+            OGL_UpdateCullFace();
 			if ((Rsp.gsp.geometryMode & Gbi.G_ZBUFFER) != 0)
 				gl.glEnable(GL.GL_DEPTH_TEST);
 			else

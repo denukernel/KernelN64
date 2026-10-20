@@ -315,6 +315,20 @@ public class OpenGlGdp {
         nearZ = trans - scale;
         Rsp.gdp.changed |= Gdp.CHANGED_VIEWPORT;
     }
+
+    /** Restore the RSP viewport after a screen-space rectangle. */
+    static void updateViewport() {
+        float halfWidth = Math.abs(Rsp.gsp.viewport.vscale[0]);
+        float halfHeight = Math.abs(Rsp.gsp.viewport.vscale[1]);
+        if (halfWidth == 0 || halfHeight == 0) {
+            gl.glViewport(0, heightOffset, width, height);
+        } else {
+            gl.glViewport((int) ((Rsp.gsp.viewport.vtrans[0] - halfWidth) * scaleX),
+                    (int) ((screenHeight - Rsp.gsp.viewport.vtrans[1] - halfHeight) * scaleY + heightOffset),
+                    (int) (halfWidth * 2 * scaleX), (int) (halfHeight * 2 * scaleY));
+        }
+        gl.glDepthRange(0.0, 1.0);
+    }
     
     // called by Gdp.setPrimDepth
     public static void setZDepth(int z) {

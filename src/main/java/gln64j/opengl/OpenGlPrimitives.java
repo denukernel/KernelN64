@@ -68,6 +68,7 @@ final class OpenGlPrimitives {
         
 
         gl.glEnable(GL.GL_SCISSOR_TEST);
+        updateViewport();
     }
 
 	static void OGL_DrawTexturedRect(float ulx, float uly, float lrx, float lry, float uls, float ult, float lrs, float lrt, boolean flip, int depthSource, int cycleType)  {
@@ -247,8 +248,7 @@ final class OpenGlPrimitives {
 
         if (culling)
             gl.glEnable(GL.GL_CULL_FACE);
-        
-
+        updateViewport();
     }
 
 	static void OGL_DrawLine(float[] vtx1, float[] c1, float[] vtx2, float[] c2, float width)  {
@@ -319,13 +319,16 @@ final class OpenGlPrimitives {
             vertex.color.put(1, spvert[CLR][1]);
             vertex.color.put(2, spvert[CLR][2]);
             vertex.color.put(3, spvert[CLR][3]);
+            float w = spvert[VTX][3];
+            float fog = w <= 0 ? 255.0f : spvert[VTX][2] / w * Rsp.gsp.fog.multiplier + Rsp.gsp.fog.offset;
+            vertex.fog.put(0, Math.max(0.0f, Math.min(255.0f, fog)));
             combiners.setConstant(vertex.color, combiners.vertex.color, combiners.vertex.alpha);
             
             if (Combiners.EXT_secondary_color) {
                 vertex.secondaryColor.put(0, 0.0f);
-                vertex.secondaryColor.put(0, 0.0f);
-                vertex.secondaryColor.put(0, 0.0f);
-                vertex.secondaryColor.put(0, 1.0f);
+                vertex.secondaryColor.put(1, 0.0f);
+                vertex.secondaryColor.put(2, 0.0f);
+                vertex.secondaryColor.put(3, 1.0f);
                 combiners.setConstant(vertex.secondaryColor, combiners.vertex.secondaryColor, Combiners.ONE);
             }
             
