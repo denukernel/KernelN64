@@ -64,3 +64,38 @@ or **advanced** inversion, diagonal range, precision modifier, opposite-directio
 handling and side-specific keys. **apply** and **ok** save and update the running
 game. release held keys after applying. the advanced test area previews staged
 input without sending it to the game. see [controller settings](docs/Controller-settings.md).
+
+## blue welcome screen
+
+with no ROM open, the main window shows an extruded K64 model on a black
+background, with blue face/side shading and a fast 360-degree turn every 3
+seconds. the silhouette follows the supplied drawing: angular K strokes, a tall
+looped 6 and an open 4 with an extended lower stem. this uses
+a separate OpenGL context and the bundled Java OpenGL libraries. opening a ROM
+stops and removes the idle renderer; ending emulation restores it. animation
+runs at about 30 fps while the window is active and skips hidden, minimized or
+inactive windows. resizing keeps the model proportions. no ROM or external
+model asset is required. if OpenGL initialization fails, the window keeps a
+static KernelN64 title so ROM loading remains available.
+
+## one emulator window
+
+only one KernelN64 instance runs per user, including separate portable copies and
+direct Java launches. opening it again restores and focuses the existing window.
+a ROM path and optional state passed to another launch are forwarded to that
+window. launch requests wait until startup is ready and are handled in order.
+an OS file lock is released automatically on exit or crash; a leftover endpoint
+file does not prevent the next launch. the handoff uses an authenticated local
+loopback connection. help and launcher runtime checks do not open another window.
+
+## window visibility
+
+the Windows launcher suppresses the console while requesting a normal GUI window.
+startup centers the emulator on a connected screen. opening a ROM or launching
+again restores a hidden/minimized window, and moves an off-screen window back
+onto a connected display. restoration runs on the Swing event thread and retains
+an existing on-screen position. launcher logs include the Java child process id
+for diagnosing a running process with no visible window.
+
+Windows can apply launcher startup visibility to the first GUI show request;
+see [the ShowWindow startup rules](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow).

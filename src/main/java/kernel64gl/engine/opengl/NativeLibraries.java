@@ -8,12 +8,12 @@ import java.util.Locale;
 import java.util.Set;
 
 /** Resolves the bundled JOGL DLLs for plain Eclipse Java launches as well as the EXE. */
-final class NativeLibraries {
+public final class NativeLibraries {
     private static boolean installed;
 
     private NativeLibraries() {}
 
-    static synchronized void install() {
+    public static synchronized void install() {
         if (installed || !System.getProperty("os.name", "").toLowerCase(Locale.ROOT).startsWith("windows")) return;
         Path directory = findDirectory();
         if (directory == null) return; // Preserve JOGL's normal loader on other installations.

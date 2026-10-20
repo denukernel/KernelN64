@@ -50,7 +50,9 @@ public final class ApplicationStartup {
         try {
             LaunchArguments arguments = LaunchArguments.parse(args);
             if (arguments.help()) { System.out.println(LaunchArguments.HELP); return; }
+            if(!SingleInstance.start(arguments))return;
         } catch (IllegalArgumentException error) { System.err.println(error.getMessage()); System.err.println(LaunchArguments.HELP); System.exit(2); return; }
+        catch(IOException error){System.err.println(error.getMessage());return;}
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -147,7 +149,7 @@ public final class ApplicationStartup {
 		}
 
 		hMainWindow.pack();
-		hMainWindow.setVisible(true);
+        MainWindowVisibility.showInitial();
 
 		// Plugins
 		URL url = null;
@@ -179,22 +181,7 @@ public final class ApplicationStartup {
 			System.out.printf("Plugins Setup\n");
 
 
-        if (args.length > 0) {
-            try {
-                LaunchArguments launch = LaunchArguments.parse(args);
-                if (launch.help()) { System.out.println(LaunchArguments.HELP); return; }
-                if (launch.rom() != null) new javax.swing.SwingWorker<Void, Void>() {
-                    protected Void doInBackground() throws Exception {
-                        loadRom(launch.rom());
-                        if (launch.state() != null) cpu.submitCommand(() -> {
-                            try { SaveStates.load(launch.state().toPath()); }
-                            catch (IOException error) { throw new java.io.UncheckedIOException(error); }
-                        }).get();
-                        return null;
-                    }
-                    protected void done() { try { get(); } catch (Exception error) { HostMessages.error("Open ROM", error); } }
-                }.execute();
-            } catch (IllegalArgumentException error) { HostMessages.error("Command Line", error); }
-        }
+        IdleScreen.show();
+        SingleInstance.ready();
 	}
 }

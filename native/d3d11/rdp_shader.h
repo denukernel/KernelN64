@@ -7,6 +7,7 @@ cbuffer Constants : register(b0) {
  float4 mux[4];
  float4 fogOptions;
  float4 rdpOptions, blender0, blender1, blendColor;
+ float4 lodScale, lodOptions;
 };
 Texture2D texture0 : register(t0); Texture2D texture1 : register(t1);
 Texture2D memoryColor : register(t2);
@@ -17,13 +18,13 @@ Fragment vs(Vertex v) {
  Fragment f; f.position=v.position; f.position.z=(v.position.z+v.position.w)*0.5;
  f.color=v.color; f.uv0=v.uv0; f.uv1=v.uv1; f.fog=v.fog; return f;
 }
-float4 source(int id, float4 combined, float4 t0, float4 t1, float4 shade, float noise) {
+float4 source(int id, float4 combined, float4 t0, float4 t1, float4 shade, float noise, float lodFraction) {
  switch(id) {
  case 0:return combined; case 1:return t0; case 2:return t1; case 3:return primitiveColor;
  case 4:return shade; case 5:return environmentColor; case 6:return 0.5; case 7:return 0.5;
  case 8:return combined.aaaa; case 9:return t0.aaaa; case 10:return t1.aaaa;
  case 11:return primitiveColor.aaaa; case 12:return shade.aaaa; case 13:return environmentColor.aaaa;
- case 14:return 0; case 15:return fogOptions.z; case 16:return noise; case 17:return 0; case 18:return 0;
+ case 14:return lodFraction; case 15:return fogOptions.z; case 16:return noise; case 17:return 0; case 18:return 0;
  case 19:return 1; default:return 0;
  }
 }
@@ -36,11 +37,18 @@ Output ps(Fragment f, uint mask:SV_Coverage) {
  if(rdpOptions.w>0.5)f.color.a=f.fog;
  float4 t0=texture0.Sample(sampler0,f.uv0), t1=texture1.Sample(sampler1,f.uv1), result=0;
  float noise=frac(sin(dot(f.position.xy,float2(12.9898,78.233)))*43758.5453);
+ float lodFraction=0;
+ // Uniform gating keeps derivatives coherent and avoids work on other materials.
+ if(lodOptions.x>0.5) {
+  float2 texels=f.uv0*lodScale.xy;
+  float2 dx=abs(ddx(texels))*lodScale.z,dy=abs(ddy(texels))*lodScale.w;
+  lodFraction=saturate(max(max(dx.x,dx.y),max(dy.x,dy.y))-1);
+ }
  [unroll] for(int cycle=0;cycle<2;cycle++) {
   if(cycle>0 && options.x<1.5) break;
   float4 rgb=mux[cycle*2], alpha=mux[cycle*2+1];
-  float3 color=(source((int)rgb.x,result,t0,t1,f.color,noise).rgb-source((int)rgb.y,result,t0,t1,f.color,noise).rgb)*source((int)rgb.z,result,t0,t1,f.color,noise).rgb+source((int)rgb.w,result,t0,t1,f.color,noise).rgb;
-  float a=(source((int)alpha.x,result,t0,t1,f.color,noise).a-source((int)alpha.y,result,t0,t1,f.color,noise).a)*source((int)alpha.z,result,t0,t1,f.color,noise).a+source((int)alpha.w,result,t0,t1,f.color,noise).a;
+  float3 color=(source((int)rgb.x,result,t0,t1,f.color,noise,lodFraction).rgb-source((int)rgb.y,result,t0,t1,f.color,noise,lodFraction).rgb)*source((int)rgb.z,result,t0,t1,f.color,noise,lodFraction).rgb+source((int)rgb.w,result,t0,t1,f.color,noise,lodFraction).rgb;
+  float a=(source((int)alpha.x,result,t0,t1,f.color,noise,lodFraction).a-source((int)alpha.y,result,t0,t1,f.color,noise,lodFraction).a)*source((int)alpha.z,result,t0,t1,f.color,noise,lodFraction).a+source((int)alpha.w,result,t0,t1,f.color,noise,lodFraction).a;
   result=saturate(float4(color,a));
  }
  int op=(int)options.y; float a=result.a, ref=options.z;

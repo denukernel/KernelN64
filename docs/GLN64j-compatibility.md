@@ -1,5 +1,37 @@
 # GLN64j compatibility fixes
 
+## peach to bowser portrait transition
+
+gln64j and d3d11 now support the paired-texture lod blend used by the castle
+hallway portrait. its two-cycle material uses `G_CC_TRILERP`, `G_CC_DECALRGB2`,
+`G_TL_LOD`, and two 32 by 32 texture tiles. the changing texel footprint makes
+peach visible far away, blends the two images during approach, and reveals
+bowser nearby. previously the missing `LOD_FRACTION` input left bowser visible
+at every distance.
+
+gln64j uses a small GLSL 1.20 shader for this combiner equation while retaining
+its legacy combiners for other materials. it matches the equation, not a game
+name or a display-list address. the shader requires OpenGL shader support;
+older contexts retain the previous fixed-function behavior. d3d11 calculates
+the fraction in its existing HLSL combiner. both reverse texture-coordinate
+normalization and tile shifts, and convert derivatives to native n64 pixel
+units so host resolution does not change the blend.
+
+the extended usa sm64 slot 2 castle scene was replayed with Fast3D SW 2.0D,
+64 mib rdram and identical scripted approach input in each renderer. captures
+show peach, the intermediate blend, and bowser. at the matching distant capture,
+only portrait pixels differ from each renderer baseline. the original states
+were preserved, visible test windows had no console, and each closed afterward.
+
+this covers one paired mip interval with maximum level one. longer mip chains,
+detail/sharpen modes, and bit-exact lod quantization remain unsupported. this
+scene verification does not establish full-game or hardware accuracy.
+
+the material is defined in the matching
+[sm64 display list](https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/levels/castle_inside/areas/1/1/model.inc.c).
+
+## earlier compatibility fixes
+
 The October 2026 compatibility update fixes several shared rendering paths:
 
 - Depth-image fills now clear the depth buffer before any color rendering. Full-screen fills are no longer discarded based on their color, and color rectangles are drawn once.

@@ -455,6 +455,7 @@ public class Cpu {
             }
             finally {
                 running = false;
+                kerneln64.ui.PausedFrame.hide(this);
                 kerneln64.scripting.LuaScripts.stopped(this);
                 KernelThreadMonitor.stopped(this);
                 java.util.concurrent.FutureTask<Void> pending;
@@ -505,6 +506,7 @@ public class Cpu {
 
     // The main emulation loop
     private void startInterpreterCPU() {
+        boolean displayedPause = false;
         while (running) {
             java.util.concurrent.FutureTask<Void> command;
             while ((command = commands.poll()) != null) command.run();
@@ -512,7 +514,11 @@ public class Cpu {
             if (kerneln64.scripting.LuaScripts.running()) kerneln64.scripting.LuaScripts.service(this);
             if (CoreOptions.pauseOnKernelFault || CoreOptions.pauseOnAudioHandshake || KernelThreadMonitor.active != null || KernelThreadDialog.monitorOpen)
                 KernelThreadMonitor.service(this);
-            if (pauseState.blocked() || !debugger.beforeInstruction()) { java.util.concurrent.locks.LockSupport.parkNanos(2_000_000); continue; }
+            if (pauseState.blocked() || !debugger.beforeInstruction()) {
+                if (!displayedPause) { kerneln64.ui.PausedFrame.show(this); displayedPause = true; }
+                java.util.concurrent.locks.LockSupport.parkNanos(2_000_000); continue;
+            }
+            if (displayedPause) { kerneln64.ui.PausedFrame.hide(this); displayedPause = false; }
             if (Rewind.service()) continue;
             try {
                 fetchInstruction();

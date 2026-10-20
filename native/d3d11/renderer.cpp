@@ -182,7 +182,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_d3d11_NativeD3D11_create(JNIEnv* env,jcl
   check(r->device->CreateVertexShader(vs->GetBufferPointer(),vs->GetBufferSize(),nullptr,&r->vertexShader),"Create VS");check(r->device->CreatePixelShader(ps->GetBufferPointer(),ps->GetBufferSize(),nullptr,&r->pixelShader),"Create PS");
   D3D11_INPUT_ELEMENT_DESC elements[]={{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},{"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,16,D3D11_INPUT_PER_VERTEX_DATA,0},{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,32,D3D11_INPUT_PER_VERTEX_DATA,0},{"TEXCOORD",1,DXGI_FORMAT_R32G32_FLOAT,0,40,D3D11_INPUT_PER_VERTEX_DATA,0},{"TEXCOORD",2,DXGI_FORMAT_R32_FLOAT,0,48,D3D11_INPUT_PER_VERTEX_DATA,0}};
   check(r->device->CreateInputLayout(elements,5,vs->GetBufferPointer(),vs->GetBufferSize(),&r->layout),"Create vertex layout");
-  D3D11_BUFFER_DESC desc={};desc.ByteWidth=52*sizeof(float);desc.BindFlags=D3D11_BIND_CONSTANT_BUFFER;check(r->device->CreateBuffer(&desc,nullptr,&r->constants),"Create shader constants");
+  D3D11_BUFFER_DESC desc={};desc.ByteWidth=60*sizeof(float);desc.BindFlags=D3D11_BIND_CONSTANT_BUFFER;check(r->device->CreateBuffer(&desc,nullptr,&r->constants),"Create shader constants");
   r->size(width,height);return reinterpret_cast<jlong>(r);
  } catch(const std::exception& error){delete r;failure(env,error);return 0;}
 }
@@ -195,10 +195,12 @@ extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_deleteTexture(JNIEnv* e
 extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_draw(JNIEnv* env,jclass,jlong pointer,jfloatArray vertexArray,jint primitive,jintArray stateArray,jfloatArray constantArray){
  try{auto& r=renderer(pointer);
  size_t length=env->GetArrayLength(vertexArray);
- if(env->GetArrayLength(stateArray)!=25||env->GetArrayLength(constantArray)!=52||length%13)throw std::runtime_error("Invalid draw command");
+ jsize constantCount=env->GetArrayLength(constantArray);
+ // Older direct callers omit the optional paired-LOD constants.
+ if(env->GetArrayLength(stateArray)!=25||(constantCount!=52&&constantCount!=60)||length%13)throw std::runtime_error("Invalid draw command");
  auto& vertices=r.drawVertices;vertices.resize(length);
- float constants[52];int state[25];
- env->GetFloatArrayRegion(vertexArray,0,(jsize)length,vertices.data());env->GetFloatArrayRegion(constantArray,0,52,constants);env->GetIntArrayRegion(stateArray,0,25,state);
+ float constants[60]={};int state[25];
+ env->GetFloatArrayRegion(vertexArray,0,(jsize)length,vertices.data());env->GetFloatArrayRegion(constantArray,0,constantCount,constants);env->GetIntArrayRegion(stateArray,0,25,state);
  if(env->ExceptionCheck())return;
  size_t count=length/13;
  if(needsFeedback(constants) && primitive!=1 && ((int)constants[37]& (64|128))!=0) {
@@ -214,7 +216,7 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_d3d11_NativeD3D11_read(JNIEnv* env,
 extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_image(JNIEnv* env,jclass,jlong pointer,jint w,jint h,jobject buffer){try{auto& r=renderer(pointer);void* data=env->GetDirectBufferAddress(buffer);if(!data||env->GetDirectBufferCapacity(buffer)<(jlong)w*h*4)throw std::runtime_error("Invalid preview buffer");r.upload(-1,w,h,data);
  float vertices[]={-1,1,0,1,1,1,1,1,0,0,0,0,0, 1,1,0,1,1,1,1,1,1,0,0,0,0, 1,-1,0,1,1,1,1,1,1,1,0,0,0, -1,1,0,1,1,1,1,1,0,0,0,0,0, 1,-1,0,1,1,1,1,1,1,1,0,0,0, -1,-1,0,1,1,1,1,1,0,1,0,0,0};
  int state[25]={};state[2]=519;state[15]=r.width;state[16]=r.height;state[17]=-1;state[19]=9728;state[20]=state[21]=33071;state[22]=9728;state[23]=state[24]=33071;
- float constants[52]={};constants[12]=1;constants[13]=519;constants[16]=constants[17]=constants[18]=20;constants[19]=1;constants[20]=constants[21]=constants[22]=20;constants[23]=9;
+ float constants[60]={};constants[12]=1;constants[13]=519;constants[16]=constants[17]=constants[18]=20;constants[19]=1;constants[20]=constants[21]=constants[22]=20;constants[23]=9;
  draw(r,vertices,6,4,state,constants);
  }catch(const std::exception& error){failure(env,error);}}
 
@@ -231,7 +233,7 @@ extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_clearDepthRect(JNIEnv* 
   float vertices[78]={};float positions[12]={left,top,right,top,right,bottom,left,top,right,bottom,left,bottom};
   for(int i=0;i<6;i++){vertices[i*13]=positions[i*2];vertices[i*13+1]=positions[i*2+1];vertices[i*13+2]=z;vertices[i*13+3]=1;}
   int state[25]={};state[0]=state[1]=1;state[2]=519;state[15]=r.width;state[16]=r.height;state[19]=state[22]=9728;
-  float constants[52]={};constants[12]=1;constants[13]=519;constants[36]=-1;
+  float constants[60]={};constants[12]=1;constants[13]=519;constants[36]=-1;
   draw(r,vertices,6,4,state,constants);
  }catch(const std::exception& error){failure(env,error);}
 }

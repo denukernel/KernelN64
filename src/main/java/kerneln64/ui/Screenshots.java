@@ -56,6 +56,8 @@ public final class Screenshots {
         } catch (Exception error) { HostMessages.error("Screenshot", error); }
     }
     public static BufferedImage currentFrame() {
+        BufferedImage paused = PausedFrame.current();
+        if (paused != null) return paused;
         if(Main.mem!=null && GameSharkCartridge.isFirmware(Main.mem.rom))return GameSharkFramebuffer.read();
         if (Main.video.gfxPlugin instanceof kernel64gl.Kernel64GLPlugin && kernel64gl.engine.opengl.OpenGlGdp.hDC!=null)
             return readDrawable(kernel64gl.engine.opengl.OpenGlGdp.hDC,GL.GL_FRONT);
@@ -67,6 +69,7 @@ public final class Screenshots {
     }
     public static void present(BufferedImage image) {
         if (image == null) return;
+        if (PausedFrame.present(image)) return;
         if (Main.video.gfxPlugin instanceof kernel64gl.Kernel64GLPlugin && kernel64gl.engine.opengl.OpenGlGdp.hDC!=null) {
             presentDrawable(kernel64gl.engine.opengl.OpenGlGdp.hDC,image,GL.GL_FRONT);return;
         }

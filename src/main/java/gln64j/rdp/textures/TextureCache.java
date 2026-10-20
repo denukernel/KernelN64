@@ -173,6 +173,9 @@ public class TextureCache {
 	public gDPTile[] textureTile = new gDPTile[2];
 	public CachedTexture[] current = new CachedTexture[2];
 
+    /** Maximum mip tile offset supplied by gSPTexture. */
+    public int textureLevel() { return texture.level; }
+
 	boolean ARB_multitexture; // TNT, GeForce, Rage 128, Radeon
 	int cachedBytes;
 	CachedTextureStack stack = new CachedTextureStack();

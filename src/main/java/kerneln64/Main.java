@@ -207,6 +207,7 @@ public class Main {
 
 	// called by InterpreterOps, Cpu
 	public static void exit(String msg) {
+        kerneln64.ui.IdleScreen.hide();
         if (cpu != null) cpu.running = false;
         Rewind.held = false;
 		CloseCpu();
@@ -246,7 +247,8 @@ public class Main {
 	}
 
 	public static synchronized void loadRom(File romFile) throws IOException, TlbException {
-		RomLifecycle.loadRom(romFile);
+		try { RomLifecycle.loadRom(romFile); }
+        finally { if(currentRomFile==null)kerneln64.ui.IdleScreen.show(); }
 	}
 
     public static void setFastForward(boolean enabled) {

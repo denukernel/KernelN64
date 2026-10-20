@@ -88,13 +88,14 @@ internal static class Launcher {
                 log.WriteLine("KernelN64 launcher\nApplication: " + app + "\nWorking directory: " + home);
                 ProcessStartInfo start = new ProcessStartInfo(java, command.ToString());
                 start.WorkingDirectory = home; start.UseShellExecute = false; start.CreateNoWindow = true;
-                start.WindowStyle = ProcessWindowStyle.Hidden;
+                // Hide the console via CreateNoWindow, not the first GUI window via STARTUPINFO.
+                start.WindowStyle = ProcessWindowStyle.Normal;
                 start.RedirectStandardOutput = true; start.RedirectStandardError = true;
                 using (Process process = new Process()) {
                     process.StartInfo = start;
                     process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs e) { if (e.Data != null) lock (gate) log.WriteLine(e.Data); };
                     process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs e) { if (e.Data != null) lock (gate) log.WriteLine(e.Data); };
-                    process.Start(); IntPtr job = Track(process);
+                    process.Start(); log.WriteLine("Java process: " + process.Id); IntPtr job = Track(process);
                     try {
                         if (job == IntPtr.Zero) log.WriteLine("Child process tracking unavailable on this host.");
                         process.BeginOutputReadLine(); process.BeginErrorReadLine(); process.WaitForExit();

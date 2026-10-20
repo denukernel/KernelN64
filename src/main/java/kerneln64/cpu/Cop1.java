@@ -30,6 +30,15 @@ import java.math.RoundingMode;
 
 
 public class Cop1 {
+    // Host diagnostics stay outside saved guest state and must never open a modal error per instruction.
+    private static final java.util.concurrent.atomic.AtomicInteger unorderedWarnings=new java.util.concurrent.atomic.AtomicInteger();
+    private static void reportUnordered(String precision,long left,long right){
+        int warning=unorderedWarnings.getAndUpdate(value->Math.min(value+1,9));
+        if(warning>=8)return;
+        System.err.println(String.format(java.util.Locale.ROOT,
+            "cop1 %s unordered comparison: %016X, %016X%s",precision,left,right,
+            warning==7?" (further comparison warnings suppressed)":""));
+    }
     
     // FPCR
     public static final int REVISION_REGISTER=                  0;
@@ -343,12 +352,11 @@ public class Cop1 {
             float temp1 = FPR[ft].getF(ft);
             
             if (Float.isNaN(temp0) || Float.isNaN(temp1)) {
-                System.err.printf("Nan ?\n");
                 less = false;
                 equal = false;
                 unorded = true;
                 if ((funct & 8) != 0) {
-                    System.err.printf("Signal InvalidOperationException\nin r4300i_COP1_S_CMP\n%X  %ff\n%X  %ff\n", temp0, temp0, temp1, temp1);
+                    reportUnordered("single",Float.floatToRawIntBits(temp0)&0xffffffffL,Float.floatToRawIntBits(temp1)&0xffffffffL);
                 }
             } else {
                 less = temp0 < temp1;
@@ -467,12 +475,11 @@ public class Cop1 {
             double temp1 = FPR[ft].getD();
             
             if (Double.isNaN(temp0) || Double.isNaN(temp1)) {
-                System.err.printf("Nan ?\n");
                 less = false;
                 equal = false;
                 unorded = true;
                 if ((funct & 8) != 0) {
-                    System.err.printf("Signal InvalidOperationException\nin r4300i_COP1_D_CMP\n");
+                    reportUnordered("double",Double.doubleToRawLongBits(temp0),Double.doubleToRawLongBits(temp1));
                 }
             } else {
                 less = temp0 < temp1;

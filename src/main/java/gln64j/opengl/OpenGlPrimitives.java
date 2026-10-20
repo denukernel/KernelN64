@@ -53,6 +53,7 @@ final class OpenGlPrimitives {
         gl.glDepthRange(0.0f, 1.0f);
         gl.glColor4f(color[0], color[1], color[2], color[3]);
         
+        combiners.beforeDraw(gl, false);
         gl.glBegin(GL.GL_QUADS);
         gl.glVertex4f(ulx, uly, (depthSource == Gbi.G_ZS_PRIM) ? zDepth : nearZ, 1.0f);
         gl.glVertex4f(lrx, uly, (depthSource == Gbi.G_ZS_PRIM) ? zDepth : nearZ, 1.0f);
@@ -199,6 +200,7 @@ final class OpenGlPrimitives {
         if (Combiners.EXT_secondary_color)
             combiners.setConstant(rect0.secondaryColor, combiners.vertex.secondaryColor, combiners.vertex.alpha);
         
+        combiners.beforeDraw(gl, false);
         gl.glBegin(GL.GL_QUADS);
 
         gl.glColor4f(rect0.color[0], rect0.color[1], rect0.color[2], rect0.color[3]);
@@ -266,6 +268,7 @@ final class OpenGlPrimitives {
 
         gl.glLineWidth(width * scaleX);
         
+        combiners.beforeDraw(gl, true);
         gl.glBegin(GL.GL_LINES);
         for (int i = 0; i < 2; i++) {
             float[][] spvert = v[i];
@@ -353,6 +356,7 @@ final class OpenGlPrimitives {
         if (numTriangles < 1)
             return;
         stipple();
+        combiners.beforeDraw(gl, true);
         gl.glDrawArrays(GL.GL_TRIANGLES, 0, numVertices);
         numTriangles = numVertices = 0;
     }

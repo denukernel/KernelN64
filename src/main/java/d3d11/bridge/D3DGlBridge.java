@@ -17,6 +17,7 @@ public final class D3DGlBridge {
     public D3DFramebuffers framebuffers;
     private final int samples;
     final int[] selectors = new int[16];
+    boolean usesLod;
     public int cycles = 1, width, height;
     private final Set<Integer> enabled = new HashSet<>();
     private int active, client, nextTexture = 1, primitive;
@@ -42,7 +43,7 @@ public final class D3DGlBridge {
     private int usedVertices;
     private final float[] positionScratch = new float[4], shadeScratch = new float[4], coordsScratch = new float[4];
     private final int[] drawState = new int[25];
-    private final float[] drawConstants = new float[52];
+    private final float[] drawConstants = new float[60];
     private static final int[] DEFAULT_PARAMETERS = {GL.GL_LINEAR,GL.GL_REPEAT,GL.GL_REPEAT};
     private static final int[] QUAD_INDICES = {0,1,2,0,2,3};
     private final Map<Integer,float[]> drawBuffers = new LinkedHashMap<>(16,0.75f,true) {
@@ -209,6 +210,15 @@ public final class D3DGlBridge {
                 c[15]=0;s[0]=s[1]=s[3]=0;
                 if(gln64j.rdp.Gdp.RDP_GETOM_CYCLE_TYPE(gdp.otherMode)==gln64j.core.Gbi.G_CYC_FILL)c[13]=GL.GL_ALWAYS;
             }
+        }
+        var cache=gln64j.opengl.OpenGlGdp.cache;
+        if(mode==GL.GL_TRIANGLES&&usesLod&&cache.textureLevel()==1
+                &&(gln64j.core.Rsp.gdp.otherMode.w0&gln64j.rdp.Gdp.TEX_LOD)!=0
+                &&(gln64j.core.Rsp.gdp.otherMode.w0&gln64j.rdp.Gdp.TEX_DETAIL)==0
+                &&cache.current[0]!=null&&cache.current[1]!=null){
+            var texture=cache.current[0];float scaleS=texture.scaleS*texture.shiftScaleS,scaleT=texture.scaleT*texture.shiftScaleT;
+            c[52]=scaleS!=0?1/scaleS:0;c[53]=scaleT!=0?1/scaleT:0;
+            c[54]=width/(float)gln64j.opengl.OpenGlGdp.screenWidth;c[55]=height/(float)gln64j.opengl.OpenGlGdp.screenHeight;c[56]=1;
         }
         NativeD3D11.draw(device,vertices,mode==GL.GL_LINES?1:4,s,c);drawCalls++;triangles+=mode==GL.GL_LINES?0:count/3;
     }

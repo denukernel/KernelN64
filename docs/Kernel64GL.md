@@ -12,6 +12,26 @@ the emulator CPU, audio and guest memory remain common host infrastructure.
 OpenGL 2.0 / GLSL 1.20 support is required. unsupported shader compilation is
 reported as an error rather than silently selecting the old renderer.
 
+## paired texture lod blending
+
+the shader supplies the combiner `LOD_FRACTION` input for the two-tile,
+maximum-level-one path used by the peach/bowser portrait in the first castle
+bowser hallway. it derives the blend from texture-coordinate derivatives in
+native n64 pixel units, reversing upload normalization and tile shifts. this
+keeps the transition independent of the host window resolution. previously this
+input was zero, leaving the portrait on bowser at every distance.
+
+an extended usa sm64 Fast3D savestate replay shows peach at the hallway entrance,
+a mixed portrait during approach, and bowser nearby. matching stationary captures
+changed only the portrait pixels. the original state was preserved. the relevant
+[sm64 material](https://github.com/n64decomp/sm64/blob/9921382a68bb0c865e5e45eb594d9c64db59b1af/levels/castle_inside/areas/1/1/model.inc.c)
+uses `G_CC_TRILERP`, two texture tiles, and `G_TL_LOD`.
+
+this is a paired-texture lod implementation, not complete rdp mipmapping:
+longer mip chains, detail/sharpen selection and bit-exact lod quantization remain
+unsupported. gln64j and d3d11 retain separate combiner implementations; their
+portrait-transition follow-up is documented in `GLN64j-compatibility.md`.
+
 ## settings
 
 select **Kernel64GL (java opengl)** in **settings > settings > plugins**, apply,

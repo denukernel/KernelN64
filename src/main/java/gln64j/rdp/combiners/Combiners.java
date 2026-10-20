@@ -323,6 +323,9 @@ public class Combiners {
 //        Gdp.changed &= ~Gdp.CHANGED_COMBINE_COLORS;
     }
 
+    /** Called after texture upload/state synchronization, immediately before a draw. */
+    public void beforeDraw(GL gl, boolean geometry) {}
+
     public void endTextureUpdate(GL gl) {
         current.compiled.set(gl, this);
     }

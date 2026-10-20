@@ -114,6 +114,7 @@ public final class RomLifecycle {
         setFastForward(false);
         EmulationStatus.reset();
         EmulationControl.refreshTitle();
+        IdleScreen.show();
     }
 
 	public static void loadRom(File romFile) throws IOException, TlbException {
@@ -135,6 +136,7 @@ public final class RomLifecycle {
 			return;
 		}
 
+        IdleScreen.hide();
         // A restart is a cold boot. ByteBuffer.clear() only resets its cursor;
         // it does not erase guest memory or reset CPU/device state.
         try { initializeHardware(GameSharkCartridge.isFirmware(rom.data)?8:0); }
@@ -183,6 +185,7 @@ public final class RomLifecycle {
             if (hMainWindow != null) hMainWindow.setTitle(EmulationStatus.windowTitle(romFile));
         });
         currentRomHash = SaveStates.romHash(rom.data);
+        MainWindowVisibility.restore();
         CompatibilityDatabase.recordRom(romFile, currentRomHash);
         cheats.clear();
         decompCheats=null;decompCheatsRejected=false;

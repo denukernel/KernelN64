@@ -14,6 +14,8 @@ public final class ShaderCombiner extends Combiners {
         @Override protected boolean removeEldestEntry(java.util.Map.Entry<Long,int[]> e){return size()>512;}
     };
     private int lastFog=-1;
+    private int lodScaleLocation,lodEnabledLocation,lastLodEnabled=-1;
+    private boolean usesLod;
     private int viewLocation,texturesLocation,lastView=-1,lastTextures=-1;
     private static final String VERTEX="""
         #version 120
@@ -34,6 +36,9 @@ public final class ShaderCombiner extends Combiners {
         uniform int debugView,texturesEnabled;
         uniform vec4 primitiveColor,environmentColor;
         uniform float primitiveLod;
+        uniform vec4 lodScale;
+        uniform int pairedLodEnabled;
+        float lodFraction;
         varying vec4 shade;
         varying vec2 uv0,uv1;
         varying float fogAmount;
@@ -43,11 +48,21 @@ public final class ShaderCombiner extends Combiners {
             if(id==6||id==7)return vec4(0.5);
             if(id==8)return combined.aaaa;if(id==9)return t0.aaaa;if(id==10)return t1.aaaa;
             if(id==11)return primitiveColor.aaaa;if(id==12)return shade.aaaa;if(id==13)return environmentColor.aaaa;
+            if(id==14)return vec4(lodFraction);
             if(id==15)return vec4(primitiveLod);
             if(id==16)return vec4(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453));
             if(id==19)return vec4(1.0);return vec4(0.0);
         }
         void main() {
+            lodFraction=0.0;
+            // This branch is uniform across the draw. Other materials need no
+            // derivative work; lod materials use guest texels per native pixel.
+            if(pairedLodEnabled!=0) {
+                vec2 texels=uv0*lodScale.xy;
+                vec2 dx=abs(dFdx(texels))*lodScale.z,dy=abs(dFdy(texels))*lodScale.w;
+                float footprint=max(max(dx.x,dx.y),max(dy.x,dy.y));
+                lodFraction=clamp(footprint-1.0,0.0,1.0);
+            }
             vec4 t0=texturesEnabled!=0?texture2D(texture0,uv0):vec4(1.0),t1=texturesEnabled!=0?texture2D(texture1,uv1):vec4(1.0),result=vec4(0.0);
             for(int cycle=0;cycle<2;cycle++) {
                 if(cycle>=cycles)break;
@@ -73,6 +88,7 @@ public final class ShaderCombiner extends Combiners {
     @Override public void init() {
         GL gl=OpenGlGdp.gl;
         lastFog=-1;
+        lastLodEnabled=-1;
         lastView=lastTextures=-1;
         int vs=shader(gl,GL.GL_VERTEX_SHADER,VERTEX),fs=shader(gl,GL.GL_FRAGMENT_SHADER,FRAGMENT);
         program=gl.glCreateProgram();gl.glAttachShader(program,vs);gl.glAttachShader(program,fs);gl.glLinkProgram(program);gl.glDeleteShader(vs);gl.glDeleteShader(fs);
@@ -82,6 +98,7 @@ public final class ShaderCombiner extends Combiners {
         muxLocation=gl.glGetUniformLocation(program,"selectors[0]");cyclesLocation=gl.glGetUniformLocation(program,"cycles");
         primitiveLocation=gl.glGetUniformLocation(program,"primitiveColor");environmentLocation=gl.glGetUniformLocation(program,"environmentColor");
         lodLocation=gl.glGetUniformLocation(program,"primitiveLod");fogLocation=gl.glGetUniformLocation(program,"fogEnabled");
+        lodScaleLocation=gl.glGetUniformLocation(program,"lodScale");lodEnabledLocation=gl.glGetUniformLocation(program,"pairedLodEnabled");
         viewLocation=gl.glGetUniformLocation(program,"debugView");texturesLocation=gl.glGetUniformLocation(program,"texturesEnabled");
         gl.glUniform1i(viewLocation,RendererSettings.debugView);lastView=RendererSettings.debugView;
         gl.glUniform1i(texturesLocation,RendererSettings.textures?1:0);lastTextures=RendererSettings.textures?1:0;
@@ -90,8 +107,8 @@ public final class ShaderCombiner extends Combiners {
     }
     @Override public void setCombine(GL gl,boolean twoCycles,long mux) {
         int[] values=expanded.computeIfAbsent(mux,Combiners::expandMux);gl.glUseProgram(program);gl.glUniform4iv(muxLocation,4,values,0);gl.glUniform1i(cyclesLocation,twoCycles?2:1);
-        usesT0=usesT1=usesNoise=false;
-        for(int i=0;i<(twoCycles?16:8);i++){int value=values[i];usesT0|=value==TEXEL0||value==TEXEL0_ALPHA;usesT1|=value==TEXEL1||value==TEXEL1_ALPHA;usesNoise|=value==NOISE;}
+        usesT0=usesT1=usesNoise=usesLod=false;
+        for(int i=0;i<(twoCycles?16:8);i++){int value=values[i];usesT0|=value==TEXEL0||value==TEXEL0_ALPHA;usesT1|=value==TEXEL1||value==TEXEL1_ALPHA;usesNoise|=value==NOISE;usesLod|=value==LOD_FRACTION;}
         if(RendererSettings.debugView==2)usesT0=true;
         if(!RendererSettings.textures)usesT0=usesT1=false;
     }
@@ -104,6 +121,20 @@ public final class ShaderCombiner extends Combiners {
     public static void beforeDraw(boolean geometry) {
         if(OpenGlGdp.combiners instanceof ShaderCombiner shader) {
             GL gl=OpenGlGdp.gl;gl.glUseProgram(shader.program);
+            var cache=OpenGlGdp.cache;
+            // The two bound tiles cover one mip interval. Longer mip chains and
+            // detail/sharpen modes require tile selection beyond this paired path.
+            int lod=geometry && shader.usesLod && cache.textureLevel()==1
+                && (Rsp.gdp.otherMode.w0&kernel64gl.engine.rdp.Gdp.TEX_LOD)!=0
+                && (Rsp.gdp.otherMode.w0&kernel64gl.engine.rdp.Gdp.TEX_DETAIL)==0
+                && cache.current[0]!=null && cache.current[1]!=null?1:0;
+            if(shader.lastLodEnabled!=lod){gl.glUniform1i(shader.lodEnabledLocation,lod);shader.lastLodEnabled=lod;}
+            if(lod!=0){
+                var texture=cache.current[0];
+                float s=texture.scaleS*texture.shiftScaleS,t=texture.scaleT*texture.shiftScaleT;
+                gl.glUniform4f(shader.lodScaleLocation,s!=0?1/s:0,t!=0?1/t:0,
+                    OpenGlGdp.hDC.getWidth()/(float)OpenGlGdp.screenWidth,OpenGlGdp.hDC.getHeight()/(float)OpenGlGdp.screenHeight);
+            }
             int fog=geometry && RendererSettings.enableFog && (Rsp.gsp.geometryMode&Gbi.G_FOG)!=0?1:0;
             if(shader.lastFog!=fog){gl.glUniform1i(shader.fogLocation,fog);shader.lastFog=fog;}
             int textures=RendererSettings.textures?1:0,view=RendererSettings.debugView;

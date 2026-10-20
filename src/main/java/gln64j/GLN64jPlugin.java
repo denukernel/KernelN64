@@ -194,7 +194,7 @@ public class GLN64jPlugin implements GfxPlugin {
         OpenGl.uc_start = OpenGl.uc_dstart = 0;
         RDRAMSize = RDRAM.capacity();
 
-        OpenGlGdp.combiners = new gln64j.rdp.combiners.Combiners();
+        OpenGlGdp.combiners = new gln64j.rdp.combiners.PairedLodCombiner();
         OpenGlGdp.cache = new gln64j.rdp.textures.TextureCache();
         Rsp.gsp = new Gsp(RDRAM, DMEM);
         Rsp.gdp = new Gdp(CheckInterrupts, REG);
