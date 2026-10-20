@@ -98,8 +98,10 @@ public class Debug {
     }
     
     public static void DebugMsg(int type, String format, Object... args) {
-        if (taskMessages++ >= 64) {
-            if (taskMessages == 65) System.out.println("Kernel64GL: additional graphics messages suppressed for this task");
+        if (!kernel64gl.engine.config.RendererSettings.diagnostics) return;
+        int limit=kernel64gl.engine.config.RendererSettings.messageLimit;
+        if (taskMessages++ >= limit) {
+            if (taskMessages == limit + 1) System.out.println("Kernel64GL: additional graphics messages suppressed for this task");
             return;
         }
         if (DumpMessages && dumpFile != null) {

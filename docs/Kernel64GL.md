@@ -17,8 +17,9 @@ reported as an error rather than silently selecting the old renderer.
 select **Kernel64GL (java opengl)** in **settings > settings > plugins**, apply,
 then configure the active graphics plugin. resolution, window locking,
 always-on-top, fog, filtering, wireframe and normal-speed vsync remain available.
-settings live in `Kernel64GL.config` and apply when the rom is reopened or the
-plugin is switched away and back. legacy plugin settings and files stay untouched.
+settings live in `Kernel64GL.config`. save applies drawing options on the next
+rendered frame and window options immediately. resume if paused. legacy plugin
+settings and files stay untouched.
 disabling bilinear filtering forces nearest sampling; enabling it allows bilinear
 sampling when requested by the guest. vsync is bypassed during f4 or shift turbo.
 
@@ -126,3 +127,58 @@ and save/load checks. targeted cases cover self-branching lists, recursive DMA,
 200000-command finite lists, translated DMA addresses, end-of-buffer lookahead
 and truncated texture reads. corrupted graphics remain and unrelated guest
 failures are still possible.
+
+## gameplay and advanced options
+
+settings are saved independently in `Kernel64GL.config`. save applies them to
+the running rom on the next rendered frame. resume if paused. old configuration
+files gain compatible defaults. no rom restart is required.
+the dialog has gameplay and advanced / corruption / debug tabs.
+
+| option | effect |
+| --- | --- |
+| texture cache budget | 16-256 MiB; default 32; controls GPU texture eviction |
+| texture output | automatic by default; optional 16-bit or experimental 32-bit conversion |
+| force bilinear | overrides guest point filtering when bilinear filtering is enabled |
+| reuse cached textures | disable to re-decode textures on texture-state updates |
+| triangles per batch | 16-512; default 512; lower values issue more draw calls |
+| render textures | disable texture uploads/use in the combiner for geometry inspection |
+| depth testing / face culling | disable either independently to inspect obscured geometry |
+| visualization | normal, vertex colors, texture 0, fog amount or normalized depth |
+| command budget | 4096-1048576 commands per task; default 262144; always bounded |
+| pause after display-list recovery | pauses after the task guard detects a looping/overlong list or invalid command fetch |
+| diagnostic messages | enable/disable decoder diagnostics, with a 1-256 message limit per task |
+
+**gameplay defaults** restores the normal rendering choices. **corruption
+recovery** uses a smaller 65536-command budget and quieter logging while keeping
+normal graphics. **graphics inspection** selects vertex colors, disables culling
+and texture reuse, reduces the budget and pauses on recovered tasks. presets
+stage edits; save persists them, cancel discards them. the defaults button also
+restores resolution and the original window/fog/filter/vsync options.
+
+debug options intentionally change game appearance. a lower command budget may
+truncate a valid complex display list. 32-bit output still inherits unsupported
+texture-format conversion cases; automatic is recommended for gameplay. these
+options do not disable memory bounds checks or repair corrupted guest data.
+
+real GPU tests verify vertex-color, texture, fog-factor and depth visualization,
+texture disabling and restoration of normal output. configuration tests cover
+all option fields, presets, live application, old files, malformed values
+and isolation from legacy renderer settings. lua scripts use the same active
+renderer and can observe or alter guest RAM without replacing its draw path.
+
+## live settings
+
+saving publishes one complete options snapshot for the active renderer. the next
+display flushes the previous triangle batch before changing drawing policy and
+marks culling, combiner, texture use and filtering for refresh. precision or cache
+budget changes delete cached GPU uploads without resetting guest tiles or TMEM.
+window size, locking and always-on-top update through the window event thread.
+vsync is updated with the current GL context. settings for the other renderers
+remain independent. paused games consume pending drawing changes when resumed.
+
+main-state runtime checks changed all five debug views and returned to normal
+without replacing the CPU or graphics plugin. they also changed resolution,
+texture enable, cache budget/precision, culling, depth testing, wireframe and batch
+size in the same running ROM, with no GL errors. host cache cleanup preserves
+the dummy texture as well as the guest texture descriptors.

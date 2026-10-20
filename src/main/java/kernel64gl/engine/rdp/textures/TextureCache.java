@@ -188,6 +188,17 @@ public class TextureCache {
         current[1] = null;
         changed = -1;
     }
+    /** Drop host uploads while preserving guest tiles, image descriptors and TMEM. */
+    public void invalidateHostTextures() {
+        for(CachedTexture texture=stack.top;texture!=null;){
+            CachedTexture next=texture.lower;
+            if(texture!=dummy)stack.remove(texture);
+            texture=next;
+        }
+        current[0]=current[1]=null;
+        cachedBytes=dummy==null?0:dummy.textureBytes;
+        changed=-1;
+    }
 	TexRect texRect = new TexRect();
 	TextureImage textureImage = new TextureImage();
 	int loadType;

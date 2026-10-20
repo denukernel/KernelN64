@@ -185,13 +185,20 @@ public class Gsp {
 	private boolean takeCommand() {
 		if (halt) return false;
 		if (taskBudget.remaining-- > 0) return true;
-		halt = true;
+		recoverTask();
 		long now = System.nanoTime();
-		if (taskBudget.lastWarning == 0 || now - taskBudget.lastWarning >= 5_000_000_000L) {
-			System.out.printf("Kernel64GL: stopped an overlong or looping display list at %08X after 262144 commands%n", PC[PCi]);
+		if (kernel64gl.engine.config.RendererSettings.diagnostics && (taskBudget.lastWarning == 0 || now - taskBudget.lastWarning >= 5_000_000_000L)) {
+			System.out.printf("Kernel64GL: stopped an overlong or looping display list at %08X after %d commands%n", PC[PCi], kernel64gl.engine.config.RendererSettings.commandLimit);
 			taskBudget.lastWarning = now;
 		}
 		return false;
+	}
+	private void recoverTask() {
+		halt = true;
+		if (kernel64gl.engine.config.RendererSettings.pauseOnInvalid && kerneln64.Main.cpu != null) {
+			kerneln64.Main.cpu.pauseState.manual(true);
+			kerneln64.ui.EmulationControl.refreshTitle();
+		}
 	}
 	public int[] segment = new int[16];
 	Matrix matrix = new Matrix();
@@ -330,7 +337,7 @@ public class Gsp {
 		byte[] ram = rdram.array();
 
 		halt = false;
-		taskBudget.remaining = 262144;
+		taskBudget.remaining = StrictMath.max(4096, StrictMath.min(1048576,kernel64gl.engine.config.RendererSettings.commandLimit));
 		taskBudget.dmaDepth = 0;
 		kernel64gl.engine.debug.Debug.beginTask();
 
@@ -338,7 +345,7 @@ public class Gsp {
 
 		while (takeCommand()) {
 			if (!validCommandAddress(PC[PCi])) {
-
+				recoverTask();
 				break;
 			}
 
@@ -365,7 +372,7 @@ public class Gsp {
 	}
 
 	public int getCmd() {
-		if (!validCommandAddress(PC[PCi])) { halt = true; return 0; }
+		if (!validCommandAddress(PC[PCi])) { recoverTask(); return 0; }
 		int w2 = rdram.getInt(PC[PCi] + 4);
 		PC[PCi] += 8;
 		return w2;

@@ -117,3 +117,24 @@ focus/manual/debugger interactions, ending a paused game, reopening, settings
 apply/cancel and persistence. kernel thread fault pause regressions also pass.
 
 After refreshing the project in Eclipse, use **Project > Clean** if Eclipse still lists classes at their old locations. `launcher/Build.ps1` rebuilds the distribution and refreshes Eclipse's compiled output, removing stale classes from the old package layout.
+
+## lua scripting
+
+`kerneln64.scripting` owns a single LuaJ session per running rom. scripts run on
+queued CPU boundaries and observed VI changes, using explicit memory, input,
+register, state-slot and lifecycle APIs. `Cpu` services callbacks before guest
+instructions, `Pif` merges controller overrides, and `SaveStates` signals restore
+events. stopping/reopening a rom releases the VM and all overrides. script globals
+and source remain outside guest savestates.
+
+`LuaConsoleDialog` is modeless and uses a bounded log. initialization and callback
+VM instruction hooks support cancellation, instruction/time budgets and controlled
+script failures. standard host IO, process/Java access, dynamic loading and
+coroutines are excluded. LuaJ is bundled as a licensed dependency for offline
+builds in the portable, Eclipse and Maven classpaths. see `Lua-scripting.md` and
+`lua/examples/` for the supported API.
+
+Kernel64GL advanced options stay in its own host settings. texture cache/precision,
+filtering, batching, diagnostic visualization and bounded task recovery apply
+through its independent renderer. they do not alter gln64j settings or the guest
+savestate schema.

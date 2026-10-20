@@ -440,6 +440,7 @@ public class Pif {
 				if (controllerPlugin != null) {
 					ControllerPlugin.Buttons Keys = new ControllerPlugin.Buttons();
 					controllerPlugin.getKeys(control, Keys);
+                    kerneln64.scripting.LuaScripts.applyInput(control, Keys);
 
 					int buttons = (Keys.value >>> 16);
 					byte x = Keys.getXAxis();

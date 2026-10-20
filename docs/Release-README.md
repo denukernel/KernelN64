@@ -67,8 +67,7 @@ so manual pauses and debugger faults remain paused.
 select **Kernel64GL (java opengl)** under **settings > settings > plugins**, apply,
 then configure the active graphics plugin. its independent java decoder and GLSL
 renderer have separate resolution, filtering, fog, wireframe,
-window and vsync settings in `Kernel64GL.config`. saved settings apply when the rom
-is reopened. see [the plugin guide](docs/Kernel64GL.md) for details and testing limits.
+window and vsync settings in `Kernel64GL.config`. saved settings apply on the next rendered frame; resume if paused. see [the plugin guide](docs/Kernel64GL.md) for details and testing limits.
 
 ## Run the portable release
 
@@ -109,3 +108,21 @@ Direct3D 11 is experimental; some N64 rasterization behavior is approximated. St
 ## Notices
 
 Read [third-party notices](THIRD-PARTY-NOTICES.md) and [release preparation](docs/Release-preparation.md) before publishing this snapshot. GPL text is retained in `COPYING`, and original copyright/license notices remain in source files. Some inherited files also retain Project64 noncommercial-use terms; this snapshot does not replace or resolve those terms with a blanket license.
+
+## lua and graphics debugging
+
+open **tools > lua scripting** for the editor and console. scripts can observe
+frames, access RDRAM, override controller input and use numbered state slots.
+see [the lua guide](docs/Lua-scripting.md) and `lua/examples/`.
+
+Kernel64GL settings now include gameplay and advanced / corruption / debug pages,
+with texture/cache controls, diagnostic views and display-list recovery presets.
+save settings to apply them live; resume if paused. see [the graphics guide](docs/Kernel64GL.md).
+
+## keyboard controller
+
+configure the keyboard controller plugin for **basic** bindings and stick strength,
+or **advanced** inversion, diagonal range, precision modifier, opposite-direction
+handling and side-specific keys. **apply** and **ok** save and update the running
+game. release held keys after applying. the advanced test area previews staged
+input without sending it to the game. see [controller settings](docs/Controller-settings.md).

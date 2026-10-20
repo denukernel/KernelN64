@@ -14,6 +14,7 @@ public final class ShaderCombiner extends Combiners {
         @Override protected boolean removeEldestEntry(java.util.Map.Entry<Long,int[]> e){return size()>512;}
     };
     private int lastFog=-1;
+    private int viewLocation,texturesLocation,lastView=-1,lastTextures=-1;
     private static final String VERTEX="""
         #version 120
         varying vec4 shade;
@@ -30,6 +31,7 @@ public final class ShaderCombiner extends Combiners {
         uniform sampler2D texture0,texture1;
         uniform ivec4 selectors[4];
         uniform int cycles,fogEnabled;
+        uniform int debugView,texturesEnabled;
         uniform vec4 primitiveColor,environmentColor;
         uniform float primitiveLod;
         varying vec4 shade;
@@ -46,7 +48,7 @@ public final class ShaderCombiner extends Combiners {
             if(id==19)return vec4(1.0);return vec4(0.0);
         }
         void main() {
-            vec4 t0=texture2D(texture0,uv0),t1=texture2D(texture1,uv1),result=vec4(0.0);
+            vec4 t0=texturesEnabled!=0?texture2D(texture0,uv0):vec4(1.0),t1=texturesEnabled!=0?texture2D(texture1,uv1):vec4(1.0),result=vec4(0.0);
             for(int cycle=0;cycle<2;cycle++) {
                 if(cycle>=cycles)break;
                 ivec4 rgb=selectors[cycle*2],alpha=selectors[cycle*2+1];
@@ -55,6 +57,10 @@ public final class ShaderCombiner extends Combiners {
                 result=clamp(vec4(color,a),0.0,1.0);
             }
             if(fogEnabled!=0)result.rgb=mix(result.rgb,gl_Fog.color.rgb,clamp(fogAmount,0.0,1.0));
+            if(debugView==1)result=vec4(shade.rgb,1.0);
+            else if(debugView==2)result=vec4(t0.rgb,1.0);
+            else if(debugView==3)result=vec4(vec3(fogAmount),1.0);
+            else if(debugView==4)result=vec4(vec3(gl_FragCoord.z),1.0);
             gl_FragColor=result;
         }
         """;
@@ -67,6 +73,7 @@ public final class ShaderCombiner extends Combiners {
     @Override public void init() {
         GL gl=OpenGlGdp.gl;
         lastFog=-1;
+        lastView=lastTextures=-1;
         int vs=shader(gl,GL.GL_VERTEX_SHADER,VERTEX),fs=shader(gl,GL.GL_FRAGMENT_SHADER,FRAGMENT);
         program=gl.glCreateProgram();gl.glAttachShader(program,vs);gl.glAttachShader(program,fs);gl.glLinkProgram(program);gl.glDeleteShader(vs);gl.glDeleteShader(fs);
         int[] status=new int[1];gl.glGetProgramiv(program,GL.GL_LINK_STATUS,status,0);
@@ -75,6 +82,9 @@ public final class ShaderCombiner extends Combiners {
         muxLocation=gl.glGetUniformLocation(program,"selectors[0]");cyclesLocation=gl.glGetUniformLocation(program,"cycles");
         primitiveLocation=gl.glGetUniformLocation(program,"primitiveColor");environmentLocation=gl.glGetUniformLocation(program,"environmentColor");
         lodLocation=gl.glGetUniformLocation(program,"primitiveLod");fogLocation=gl.glGetUniformLocation(program,"fogEnabled");
+        viewLocation=gl.glGetUniformLocation(program,"debugView");texturesLocation=gl.glGetUniformLocation(program,"texturesEnabled");
+        gl.glUniform1i(viewLocation,RendererSettings.debugView);lastView=RendererSettings.debugView;
+        gl.glUniform1i(texturesLocation,RendererSettings.textures?1:0);lastTextures=RendererSettings.textures?1:0;
         gl.glUniform1i(gl.glGetUniformLocation(program,"texture0"),0);gl.glUniform1i(gl.glGetUniformLocation(program,"texture1"),1);
         vertex.color=SHADE;vertex.alpha=SHADE_ALPHA;vertex.secondaryColor=ZERO;
     }
@@ -82,6 +92,8 @@ public final class ShaderCombiner extends Combiners {
         int[] values=expanded.computeIfAbsent(mux,Combiners::expandMux);gl.glUseProgram(program);gl.glUniform4iv(muxLocation,4,values,0);gl.glUniform1i(cyclesLocation,twoCycles?2:1);
         usesT0=usesT1=usesNoise=false;
         for(int i=0;i<(twoCycles?16:8);i++){int value=values[i];usesT0|=value==TEXEL0||value==TEXEL0_ALPHA;usesT1|=value==TEXEL1||value==TEXEL1_ALPHA;usesNoise|=value==NOISE;}
+        if(RendererSettings.debugView==2)usesT0=true;
+        if(!RendererSettings.textures)usesT0=usesT1=false;
     }
     @Override public void updateCombineColors(GL gl) {
         gl.glUseProgram(program);gl.glUniform4f(primitiveLocation,primColor.r,primColor.g,primColor.b,primColor.a);
@@ -94,6 +106,9 @@ public final class ShaderCombiner extends Combiners {
             GL gl=OpenGlGdp.gl;gl.glUseProgram(shader.program);
             int fog=geometry && RendererSettings.enableFog && (Rsp.gsp.geometryMode&Gbi.G_FOG)!=0?1:0;
             if(shader.lastFog!=fog){gl.glUniform1i(shader.fogLocation,fog);shader.lastFog=fog;}
+            int textures=RendererSettings.textures?1:0,view=RendererSettings.debugView;
+            if(shader.lastView!=view){gl.glUniform1i(shader.viewLocation,view);shader.lastView=view;}
+            if(shader.lastTextures!=textures){gl.glUniform1i(shader.texturesLocation,textures);shader.lastTextures=textures;}
         }
     }
 }

@@ -70,7 +70,7 @@ public final class EmulationControl {
         Main.cpu.pauseState.clear();
         applyFocusPolicy();
     }
-    static void refreshTitle() {
+    public static void refreshTitle() {
         SwingUtilities.invokeLater(() -> {
             if (Main.hMainWindow != null) {
                 Main.hMainWindow.setTitle(Main.currentRomFile == null ? "KernelN64"

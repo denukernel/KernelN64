@@ -239,6 +239,7 @@ public final class SaveStates {
                 Main.video.resetTimer();
                 if (Main.audio.audioPlugin instanceof aziaudio.AziAudioPlugin) aziaudio.AziAudioPlugin.stateAudio().flushOutput();
                 GraphicsState.restored();
+                kerneln64.scripting.LuaScripts.stateRestored();
                 Main.rsp.lastValidAudioTaskTime = System.currentTimeMillis();
             } catch (ReflectiveOperationException e) { throw new IOException("Cannot restore emulator state", e); }
             finally { if (!restored) Main.cpu.cop1.setMode32(previousMode); }

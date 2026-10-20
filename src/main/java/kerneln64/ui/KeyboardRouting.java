@@ -24,19 +24,15 @@ public final class KeyboardRouting {
                 || MenuSelectionManager.defaultManager().getSelectedPath().length!=0)return false;
         BasicKeyboardPlugin keyboard=Main.pif.controllerPlugin instanceof BasicKeyboardPlugin pad?pad:null;
         if(keyboard==null)return selectSlot(event);
-        boolean mapped=keyboard.usesKey(event.getKeyCode());
+        boolean mapped=keyboard.usesKey(event.getKeyCode(),event.getKeyLocation());
         // Releases for an unassigned hotkey must still reach its listener even
         // if the player pressed a controller modifier in the meantime.
         if(event.getID()==KeyEvent.KEY_RELEASED && !mapped)return false;
-        boolean controllerModifier=(event.isControlDown() && keyboard.usesKey(KeyEvent.VK_CONTROL))
-                || (event.isShiftDown() && keyboard.usesKey(KeyEvent.VK_SHIFT))
-                || (event.isAltDown() && keyboard.usesKey(KeyEvent.VK_ALT))
-                || (event.isAltGraphDown() && keyboard.usesKey(KeyEvent.VK_ALT_GRAPH))
-                || (event.isMetaDown() && keyboard.usesKey(KeyEvent.VK_META));
+        boolean controllerModifier=keyboard.controllerModifierDown();
         if(!mapped && !controllerModifier)return selectSlot(event);
         if(mapped) {
-            if(event.getID()==KeyEvent.KEY_PRESSED)keyboard.wmKeyDown(event.getKeyCode(),0);
-            else if(event.getID()==KeyEvent.KEY_RELEASED)keyboard.wmKeyUp(event.getKeyCode(),0);
+            if(event.getID()==KeyEvent.KEY_PRESSED)keyboard.wmKeyDown(event.getKeyCode(),event.getKeyLocation());
+            else if(event.getID()==KeyEvent.KEY_RELEASED)keyboard.wmKeyUp(event.getKeyCode(),event.getKeyLocation());
         }
         event.consume();return true;
     }

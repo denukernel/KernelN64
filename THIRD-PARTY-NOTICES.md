@@ -12,3 +12,9 @@ the independent Kernel64GL engine under `src/main/java/kernel64gl/engine` is a s
 * **Bundled Java runtime:** portable archives preserve the runtime's complete `legal/` directory and `release` metadata. The current local runtime was generated from Oracle JDK 24.0.2; its terms are in `runtime/legal/java.base/LICENSE`. A rebuild uses the JDK selected by the builder. Review that JDK's redistribution terms when distributing a runtime.
 
 No Nintendo game images, GameShark firmware images, game assets, or matching SM64 ELF/map files are included in the release preparation.
+
+## luaj
+
+lua scripting uses LuaJ 3.0.1, copyright (c) 2009 Luaj.org and contributors,
+under its MIT-style license. see `licenses/LuaJ.txt` and
+https://github.com/luaj/luaj. the bundled dependency is `luaj-jse-3.0.1.jar`.

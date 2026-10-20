@@ -248,7 +248,7 @@ public class OpenGlGdp {
     
     // called by OpenGl.config
     public static void config() {
-        cache.config(32 * 1048576, 1);
+        cache.config(RendererSettings.cacheMiB * 1048576, RendererSettings.textureDepth);
         windowedWidth = RendererSettings.windowWidth;
         windowedHeight = RendererSettings.windowHeight;
     }

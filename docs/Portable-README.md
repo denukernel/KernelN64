@@ -38,7 +38,7 @@ Matching source is provided in the source ZIP distributed with this package. See
 
 ## Kernel64GL settings
 
-select the plugin and apply before configuring it. saved settings apply when the rom is reopened. see [the plugin guide](docs/Kernel64GL.md).
+select the plugin and apply before configuring it. saved settings apply on the next rendered frame; resume if paused. see [the plugin guide](docs/Kernel64GL.md).
 
 ## emulation controls
 
@@ -46,3 +46,21 @@ f2 pauses or resumes the game. ctrl+e ends emulation while keeping KernelN64 ope
 settings offers interpreter and cached interpreter cpu styles, applied on the next
 rom open or restart, plus optional pause when the application window is inactive.
 manual and debugger pauses remain in effect when focus returns.
+
+## lua and graphics debugging
+
+open **tools > lua scripting** for the editor and console. scripts can observe
+frames, access RDRAM, override controller input and use numbered state slots.
+see [the lua guide](docs/Lua-scripting.md) and `lua/examples/`.
+
+Kernel64GL settings now include gameplay and advanced / corruption / debug pages,
+with texture/cache controls, diagnostic views and display-list recovery presets.
+save settings to apply them live; resume if paused. see [the graphics guide](docs/Kernel64GL.md).
+
+## keyboard controller
+
+configure the keyboard controller plugin for **basic** bindings and stick strength,
+or **advanced** inversion, diagonal range, precision modifier, opposite-direction
+handling and side-specific keys. **apply** and **ok** save and update the running
+game. release held keys after applying. the advanced test area previews staged
+input without sending it to the game. see [controller settings](docs/Controller-settings.md).

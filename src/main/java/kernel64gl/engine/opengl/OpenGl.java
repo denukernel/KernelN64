@@ -167,6 +167,7 @@ public class OpenGl {
 	public static GL gl;
     private static int polygonMode=-1,depthTest=-1;
     private static void setDepthTest(boolean enabled) {
+        enabled &= RendererSettings.depthTest;
         int requested=enabled?1:0;
         if(requested!=depthTest){if(enabled)gl.glEnable(GL.GL_DEPTH_TEST);else gl.glDisable(GL.GL_DEPTH_TEST);depthTest=requested;}
     }
@@ -259,7 +260,7 @@ public class OpenGl {
 	// Private Methods /////////////////////////////////////////////////////////
 
 	private static void OGL_UpdateCullFace() {
-		if ((Rsp.gsp.geometryMode & Gbi.G_CULL_BOTH) != 0) {
+		if (RendererSettings.culling && (Rsp.gsp.geometryMode & Gbi.G_CULL_BOTH) != 0) {
 			gl.glEnable(GL.GL_CULL_FACE);
 
 			if ((Rsp.gsp.geometryMode & Gbi.G_CULL_BOTH) == Gbi.G_CULL_BOTH)

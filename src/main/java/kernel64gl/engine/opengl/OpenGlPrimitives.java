@@ -348,7 +348,7 @@ final class OpenGlPrimitives {
         
         numTriangles++;
         
-        if (numVertices >= 1536)
+        if (numVertices >= RendererSettings.batchTriangles * 3)
             OGL_DrawTriangles();
     }
 

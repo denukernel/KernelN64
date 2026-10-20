@@ -77,7 +77,7 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetCI4IA_RGBA4444 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetCI4IA_RGBA4444");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetCI4IA_RGBA4444%n");
             return 0x0000F0FF;
         }
     };
@@ -104,14 +104,14 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetCI4RGBA_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetCI4RGBA_RGBA8888");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetCI4RGBA_RGBA8888%n");
             return 0xFF00FFFF;
         }
     };
     
     public static final GetTexelFunc GetIA31_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetIA31_RGBA8888");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetIA31_RGBA8888%n");
             return 0xFF00FFFF;
         }
     };
@@ -125,7 +125,7 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetI4_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetI4_RGBA8888");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetI4_RGBA8888%n");
             return 0xFF00FFFF;
         }
     };
@@ -139,14 +139,14 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetCI8IA_RGBA4444 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetCI8IA_RGBA4444");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetCI8IA_RGBA4444%n");
             return 0x0000F0FF;
         }
     };
     
     public static final GetTexelFunc GetCI8IA_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetCI8IA_RGBA8888");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetCI8IA_RGBA8888%n");
             return 0xFF00FFFF;
         }
     };
@@ -159,14 +159,14 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetCI8RGBA_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetCI8RGBA_RGBA8888");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetCI8RGBA_RGBA8888%n");
             return 0xFF00FFFF;
         }
     };
     
     public static final GetTexelFunc GetIA44_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetIA44_RGBA8888");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetIA44_RGBA8888%n");
             return 0xFF00FFFF;
         }
     };
@@ -185,7 +185,7 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetI8_RGBA4444 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            System.out.println("GetI8_RGBA4444");
+            kernel64gl.engine.debug.Debug.DebugMsg(0, "unsupported texel conversion: GetI8_RGBA4444%n");
             return 0x0000F0FF;
         }
     };

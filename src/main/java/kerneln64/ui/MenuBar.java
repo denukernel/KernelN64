@@ -271,6 +271,9 @@ public class MenuBar extends JMenuBar {
 
     private JMenu createToolsMenu() {
         JMenu tools = new JMenu("Tools");
+        JMenuItem lua = new JMenuItem("Lua scripting...");
+        lua.addActionListener(e -> kerneln64.scripting.LuaConsoleDialog.showConsole());
+        tools.add(lua);
         JMenuItem cheats = new JMenuItem("GameShark Codes...");
         cheats.addActionListener(e -> editCheats());
         tools.add(cheats);

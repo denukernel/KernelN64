@@ -270,7 +270,7 @@ final class TextureUploads {
 
 		// END safety block
 
-		CachedTexture tex = state.stack.top;
+		CachedTexture tex = kernel64gl.engine.config.RendererSettings.cacheTextures ? state.stack.top : null;
 		while (tex != null) {
 
 			// ⚠ SKIP unsafe cached textures (corrupted by TMEM chaos)
@@ -376,7 +376,7 @@ final class TextureUploads {
 		int crc = (int) state.crc32.getValue();
 
 		// find and activate bgImage
-		CachedTexture tex = state.stack.top;
+		CachedTexture tex = kernel64gl.engine.config.RendererSettings.cacheTextures ? state.stack.top : null;
 		while (tex != null) {
 			if ((tex.crc == crc) && (tex.width == state.bgImage.width) && (tex.height == state.bgImage.height)
 					&& (tex.format == state.bgImage.format) && (tex.size == state.bgImage.size)) {
@@ -445,7 +445,7 @@ final class TextureUploads {
 	}
 
 	static void activateTexture(TextureCache state, int t, CachedTexture texture, boolean linear) {
-        linear &= kernel64gl.engine.config.RendererSettings.bilinear;
+        linear = kernel64gl.engine.config.RendererSettings.bilinear && (linear || kernel64gl.engine.config.RendererSettings.forceBilinear);
 
 		if (state.ARB_multitexture)
 			state.gl.glActiveTexture(GL.GL_TEXTURE0 + t);

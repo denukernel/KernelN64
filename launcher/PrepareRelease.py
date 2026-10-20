@@ -70,13 +70,15 @@ def main():
     tree(ROOT / "launcher", repository / "launcher")
     tree(ROOT / "licenses", repository / "licenses")
     tree(ROOT / "codes", repository / "codes")
+    for name in ["frame-watch.lua", "input-pulse.lua", "sm64-audio-wobble.lua", "sm64-audio-broken-scale.lua", "sm64-music-tempo.lua", "sm64-gfx-squash.lua", "sm64-blj-assist.lua"]:
+        copy(ROOT / "lua/examples" / name, repository / "lua/examples" / name)
     for name in ["kerneln64-icon-source.png", "kerneln64.ico"]:
         copy(ROOT / "assets" / name, repository / "assets" / name)
     tree(ROOT / "assets/screenshots", repository / "assets/screenshots")
-    for name in ["jogl.jar", "gluegen-rt.jar", "jogl.dll", "jogl_awt.dll", "jogl_cg.dll", "gluegen-rt.dll", "KernelN64D3D11.dll"]:
+    for name in ["jogl.jar", "gluegen-rt.jar", "luaj-jse-3.0.1.jar", "jogl.dll", "jogl_awt.dll", "jogl_cg.dll", "gluegen-rt.dll", "KernelN64D3D11.dll"]:
         copy(ROOT / "KernelN64winportable" / name, repository / "KernelN64winportable" / name)
     copy(ROOT / "docs/Release-README.md", repository / "README.md")
-    for name in ["Source-layout.md", "SM64-decomp-cheats.md", "GameShark-firmware.md", "GLN64j-compatibility.md", "Kernel64GL.md", "Release-preparation.md", "Release-README.md", "Portable-README.md"]:
+    for name in ["Controller-settings.md", "Lua-scripting.md", "Source-layout.md", "SM64-decomp-cheats.md", "GameShark-firmware.md", "GLN64j-compatibility.md", "Kernel64GL.md", "Release-preparation.md", "Release-README.md", "Portable-README.md"]:
         text = (ROOT / "docs" / name).read_text(encoding="utf-8")
         if name in {"SM64-decomp-cheats.md", "GameShark-firmware.md"}:
             text = text.split("\n## Verification\n")[0]
@@ -113,6 +115,7 @@ def main():
             tree(portable_build / name, portable / name)
         tree(repository / "docs", portable / "docs")
         tree(repository / "assets", portable / "assets")
+        tree(repository / "lua/examples", portable / "lua/examples")
         copy(ROOT / "docs/Portable-README.md", portable / "README.md")
         archive(portable, downloads / "KernelN64-windows-x64-preview.zip", "KernelN64")
 

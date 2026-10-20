@@ -455,6 +455,7 @@ public class Cpu {
             }
             finally {
                 running = false;
+                kerneln64.scripting.LuaScripts.stopped(this);
                 KernelThreadMonitor.stopped(this);
                 java.util.concurrent.FutureTask<Void> pending;
                 while ((pending = commands.poll()) != null) pending.cancel(false);
@@ -508,6 +509,7 @@ public class Cpu {
             java.util.concurrent.FutureTask<Void> command;
             while ((command = commands.poll()) != null) command.run();
             if (!running) break;
+            if (kerneln64.scripting.LuaScripts.running()) kerneln64.scripting.LuaScripts.service(this);
             if (CoreOptions.pauseOnKernelFault || CoreOptions.pauseOnAudioHandshake || KernelThreadMonitor.active != null || KernelThreadDialog.monitorOpen)
                 KernelThreadMonitor.service(this);
             if (pauseState.blocked() || !debugger.beforeInstruction()) { java.util.concurrent.locks.LockSupport.parkNanos(2_000_000); continue; }

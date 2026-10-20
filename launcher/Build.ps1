@@ -15,7 +15,7 @@ if (Test-Path -LiteralPath $classRoot) {
     Remove-Item -LiteralPath $resolvedClasses -Recurse -Force
 }
 New-Item -ItemType Directory -Force -Path $outputRoot, $classRoot, $tempRoot, (Join-Path $outputRoot 'lib') | Out-Null
-$libraries = @('jogl.jar', 'gluegen-rt.jar') | ForEach-Object { Join-Path $projectRoot "KernelN64winportable/$_" }
+$libraries = @('jogl.jar', 'gluegen-rt.jar', 'luaj-jse-3.0.1.jar') | ForEach-Object { Join-Path $projectRoot "KernelN64winportable/$_" }
 $sources = @(Get-ChildItem (Join-Path $projectRoot 'src/main/java') -Recurse -Filter '*.java' | ForEach-Object FullName)
 & (Join-Path $Jdk 'bin/javac.exe') --release 21 -encoding UTF-8 -cp ($libraries -join ';') -d $classRoot $sources
 if ($LASTEXITCODE -ne 0) { throw 'Java compilation failed' }
@@ -115,3 +115,13 @@ if (Test-Path -LiteralPath $codeSource) {
 }
 Write-Output "Built: $outputRoot/KernelN64.exe"
 Write-Output "Project launcher: $projectRoot/KernelN64.exe"
+
+foreach ($guide in @('Lua-scripting.md', 'Kernel64GL.md', 'Controller-settings.md')) {
+    New-Item -ItemType Directory -Force -Path (Join-Path $outputRoot 'docs') | Out-Null
+    Copy-Item -LiteralPath (Join-Path $projectRoot "docs/$guide") -Destination (Join-Path $outputRoot 'docs') -Force
+}
+$luaOutput = Join-Path $outputRoot 'lua/examples'
+New-Item -ItemType Directory -Force -Path $luaOutput | Out-Null
+foreach ($example in @('frame-watch.lua','input-pulse.lua','sm64-audio-wobble.lua','sm64-audio-broken-scale.lua','sm64-music-tempo.lua','sm64-gfx-squash.lua','sm64-blj-assist.lua')) {
+    Copy-Item -LiteralPath (Join-Path $projectRoot "lua/examples/$example") -Destination $luaOutput -Force
+}
