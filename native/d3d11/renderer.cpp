@@ -30,6 +30,7 @@ struct Renderer {
  std::map<unsigned long long,ComPtr<ID3D11BlendState>> blends;
  std::map<unsigned long long,ComPtr<ID3D11DepthStencilState>> depths;
  std::map<unsigned long long,ComPtr<ID3D11RasterizerState>> rasters;
+ std::vector<float> drawVertices;
  int width=0,height=0,samples=1,currentTarget=0; bool software=false;
  std::map<int,Surface> surfaces;
  int depthKey=0;
@@ -74,12 +75,14 @@ struct Renderer {
  void copyFeedback() {
   context->OMSetRenderTargets(0,nullptr,nullptr);
   ID3D11ShaderResourceView* empty=nullptr;context->PSSetShaderResources(2,1,&empty);
-  resolve();
   if(!feedback) {
    D3D11_TEXTURE2D_DESC desc;color->GetDesc(&desc);desc.BindFlags=D3D11_BIND_SHADER_RESOURCE;
    check(device->CreateTexture2D(&desc,nullptr,&feedback),"Create framebuffer feedback");check(device->CreateShaderResourceView(feedback.Get(),nullptr,&feedbackView),"Create framebuffer SRV");
   }
-  context->CopyResource(feedback.Get(),samples>1?color.Get():multisample.Get());
+  // Resolve straight into the shader input instead of resolving to color and
+  // then copying the entire framebuffer again for every feedback draw.
+  if(samples>1)context->ResolveSubresource(feedback.Get(),0,multisample.Get(),0,DXGI_FORMAT_R8G8B8A8_UNORM);
+  else context->CopyResource(feedback.Get(),multisample.Get());
   ID3D11ShaderResourceView* view=feedbackView.Get();context->PSSetShaderResources(2,1,&view);
  }
  ~Renderer() { if(context) { context->ClearState(); context->Flush(); } }
@@ -108,9 +111,21 @@ static D3D11_BLEND blend(int mode) {
  case 774:return D3D11_BLEND_DEST_COLOR;case 775:return D3D11_BLEND_INV_DEST_COLOR;default:return D3D11_BLEND_ONE; }
 }
 static D3D11_TEXTURE_ADDRESS_MODE wrap(int mode) { return mode==10497?D3D11_TEXTURE_ADDRESS_WRAP: mode==33648?D3D11_TEXTURE_ADDRESS_MIRROR:D3D11_TEXTURE_ADDRESS_CLAMP; }
+// Match the shader's framebuffer dependencies. Opaque draws without image-read
+// use fixed stored coverage and never consume memory color. Copying/resolving
+// the entire target for these draws only serializes the GPU.
+static bool needsFeedback(const float* c) {
+ if(c[36]<=0.5f)return false;
+ unsigned mode=(unsigned)c[37];
+ if(mode&64)return true;
+ if(!(mode&16384) && c[15]<=0.5f)return false;
+ int cycles=c[12]>1.5f && (mode&16384)?2:1;
+ for(int i=0;i<cycles;i++)if((int)c[40+i*4]==1 || (int)c[42+i*4]==1)return true;
+ return false;
+}
 static void draw(Renderer& r,const float* data,size_t count,int primitive,const int* s,const float* c) {
  size_t bytes=count*13*sizeof(float); if(!count)return;
- if(c[36]>0.5f)r.copyFeedback();
+ if(needsFeedback(c))r.copyFeedback();
  if(bytes>r.vertexBytes) {
   r.vertices.Reset();r.vertexBytes=(bytes+65535)&~size_t(65535);D3D11_BUFFER_DESC desc={};desc.ByteWidth=(UINT)r.vertexBytes;desc.Usage=D3D11_USAGE_DYNAMIC;desc.BindFlags=D3D11_BIND_VERTEX_BUFFER;desc.CPUAccessFlags=D3D11_CPU_ACCESS_WRITE;
   check(r.device->CreateBuffer(&desc,nullptr,&r.vertices),"Create vertex buffer");
@@ -178,12 +193,17 @@ extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_clear(JNIEnv* env,jclas
 extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_texture(JNIEnv* env,jclass,jlong pointer,jint id,jint w,jint h,jobject buffer){try{void* data=env->GetDirectBufferAddress(buffer);if(!data||env->GetDirectBufferCapacity(buffer)<(jlong)w*h*4)throw std::runtime_error("Invalid texture upload buffer");renderer(pointer).upload(id,w,h,data);}catch(const std::exception& error){failure(env,error);}}
 extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_deleteTexture(JNIEnv* env,jclass,jlong pointer,jint id){try{renderer(pointer).textures.erase(id);}catch(const std::exception& error){failure(env,error);}}
 extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_draw(JNIEnv* env,jclass,jlong pointer,jfloatArray vertexArray,jint primitive,jintArray stateArray,jfloatArray constantArray){
- std::vector<float> vertices(env->GetArrayLength(vertexArray)),constants(env->GetArrayLength(constantArray));std::vector<int> state(env->GetArrayLength(stateArray));
- env->GetFloatArrayRegion(vertexArray,0,(jsize)vertices.size(),vertices.data());env->GetFloatArrayRegion(constantArray,0,(jsize)constants.size(),constants.data());env->GetIntArrayRegion(stateArray,0,(jsize)state.size(),state.data());
- try{if(state.size()!=25||constants.size()!=52||vertices.size()%13)throw std::runtime_error("Invalid draw command");auto& r=renderer(pointer);size_t count=vertices.size()/13;
- if(constants[36]>0.5f && primitive!=1 && ((int)constants[37]& (64|128))!=0) {
-  for(size_t i=0;i+2<count;i+=3)draw(r,vertices.data()+i*13,3,primitive,state.data(),constants.data());
- }else draw(r,vertices.data(),count,primitive,state.data(),constants.data());}catch(const std::exception& error){failure(env,error);}
+ try{auto& r=renderer(pointer);
+ size_t length=env->GetArrayLength(vertexArray);
+ if(env->GetArrayLength(stateArray)!=25||env->GetArrayLength(constantArray)!=52||length%13)throw std::runtime_error("Invalid draw command");
+ auto& vertices=r.drawVertices;vertices.resize(length);
+ float constants[52];int state[25];
+ env->GetFloatArrayRegion(vertexArray,0,(jsize)length,vertices.data());env->GetFloatArrayRegion(constantArray,0,52,constants);env->GetIntArrayRegion(stateArray,0,25,state);
+ if(env->ExceptionCheck())return;
+ size_t count=length/13;
+ if(needsFeedback(constants) && primitive!=1 && ((int)constants[37]& (64|128))!=0) {
+  for(size_t i=0;i+2<count;i+=3)draw(r,vertices.data()+i*13,3,primitive,state,constants);
+ }else draw(r,vertices.data(),count,primitive,state,constants);}catch(const std::exception& error){failure(env,error);}
 }
 extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_present(JNIEnv* env,jclass,jlong pointer,jboolean vsync){try{auto& r=renderer(pointer);r.resolve();if(r.swap){ComPtr<ID3D11Texture2D> back;check(r.swap->GetBuffer(0,IID_PPV_ARGS(&back)),"Get swap buffer");r.context->CopyResource(back.Get(),r.color.Get());check(r.swap->Present(vsync?1:0,0),"Present");}else r.context->Flush();}catch(const std::exception& error){failure(env,error);}}
 extern "C" JNIEXPORT jbyteArray JNICALL Java_d3d11_NativeD3D11_read(JNIEnv* env,jclass,jlong pointer){try{auto& r=renderer(pointer);r.resolve();if(!r.staging){D3D11_TEXTURE2D_DESC desc;r.color->GetDesc(&desc);desc.Usage=D3D11_USAGE_STAGING;desc.BindFlags=0;desc.CPUAccessFlags=D3D11_CPU_ACCESS_READ;check(r.device->CreateTexture2D(&desc,nullptr,&r.staging),"Create readback texture");}

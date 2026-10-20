@@ -35,7 +35,8 @@ final class ABI2Resampler {
 
     static void RESAMPLE2() {
         int flags = (inst1 >>> 16) & 0xFF;
-        int Pitch = (inst1 & 0xFFFF); // FIXED
+        // Command pitch is Q1.15; the running phase is Q16.16.
+        int Pitch = (inst1 & 0xFFFF) << 1;
         int addy = inst2 & 0xFFFFFF;
 
         int Accum;
@@ -48,11 +49,11 @@ final class ABI2Resampler {
         // proper accumulator
         if ((flags & 1) == 0) {
         	for (int i = 0; i < 4; i++)
-        		src.put((srcPtr + i) ^ 1, rdram.getShort((((addy >> 1) + i) ^ 1) * 2));
+        		src.put(srcPtr + i, rdram.getShort(addy + i * 2));
         	Accum = rdram.getShort(addy + 8) & 0xFFFF;
         } else {
         	for (int i = 0; i < 4; i++)
-        		src.put((srcPtr + i) ^ 1, (short) 0);
+        		src.put(srcPtr + i, (short) 0);
         	Accum = 0;
         }
 
@@ -67,10 +68,11 @@ final class ABI2Resampler {
         	short c2 = ResampleLUT[idx + 2];
         	short c3 = ResampleLUT[idx + 3];
 
-        	int s0 = src.get((srcPtr + 0) ^ 1);
-        	int s1 = src.get((srcPtr + 1) ^ 1);
-        	int s2 = src.get((srcPtr + 2) ^ 1);
-        	int s3 = src.get((srcPtr + 3) ^ 1);
+        	// Java buffers already use N64 byte order; no host word swapping.
+        	int s0 = src.get(srcPtr);
+        	int s1 = src.get(srcPtr + 1);
+        	int s2 = src.get(srcPtr + 2);
+        	int s3 = src.get(srcPtr + 3);
 
         	int out = (s0 * c0);
         	out += (s1 * c1);
@@ -83,7 +85,7 @@ final class ABI2Resampler {
         	else if (out < -32768)
         		out = -32768;
 
-        	dst.put(dstPtr ^ 1, (short) out);
+        	dst.put(dstPtr, (short) out);
         	dstPtr++;
 
         	Accum += Pitch;
@@ -91,6 +93,9 @@ final class ABI2Resampler {
         	Accum &= 0xFFFF;
         }
 
+        // Every command resumes from this history as well as its fractional phase.
+        for (int i = 0; i < 4; i++)
+            rdram.putShort(addy + i * 2, src.get(srcPtr + i));
         rdram.putShort(addy + 8, (short) Accum);
     }
 }

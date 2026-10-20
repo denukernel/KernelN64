@@ -185,8 +185,8 @@ public class Main {
 	// used by Pif, Eeprom
 	public static boolean ShowPifRamErrors = Default_ShowPifRamErrors;
 
-	public static boolean UseAudio = Default_UseAudio;
-	public static boolean FrameLimit = Default_FrameLimit;
+	public static volatile boolean UseAudio = Default_UseAudio;
+	public static volatile boolean FrameLimit = Default_FrameLimit;
 	public static boolean SpeedUp = false;
 
 	public static long cpuStartTime;
@@ -252,9 +252,9 @@ public class Main {
     public static void setFastForward(boolean enabled) {
         isFastForward = enabled;
         SpeedMultiplier = shiftHeld ? 4.0f : enabled ? FastForwardOptions.multiplier() : 1.0f;
-        FrameLimit = true;
+        FrameLimit = !shiftHeld;
         if (video != null) {
-            video.setFrameLimit(true);
+            video.setFrameLimit(FrameLimit);
             video.resetTimer();
         }
     }

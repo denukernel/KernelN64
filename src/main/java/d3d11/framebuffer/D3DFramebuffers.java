@@ -21,6 +21,8 @@ public final class D3DFramebuffers {
     private final LinkedHashMap<Integer,Buffer> buffers=new LinkedHashMap<>();
     private int selected;
     private boolean busy;
+    private long contentVersion;
+    public long contentVersion() { return contentVersion; }
     private static final class Buffer {
         int address,width,height,size; boolean dirty,cpuChanged; long hash=-1;
         int bytes() { return width*height*(size==3?4:2); }
@@ -48,6 +50,7 @@ public final class D3DFramebuffers {
     public static boolean enabled() { return active!=null; }
     public void close() { if(active==this){active=null;Arrays.fill(pages,false);} }
     public void reset() {
+        contentVersion++;
         NativeD3D11.resetTargets(device);selected=0;
         buffers.clear();Arrays.fill(pages,false);
     }
@@ -83,6 +86,7 @@ public final class D3DFramebuffers {
         if(selected!=b.address)select(b.address);
         if(b.cpuChanged)upload(b);
         b.dirty=true;
+        contentVersion++;
     }
     private void mapPages(Buffer b) {
         for(int p=b.address>>>12;p<=Math.min(pages.length-1,(b.address+b.bytes()-1)>>>12);p++)pages[p]=true;
@@ -134,7 +138,7 @@ public final class D3DFramebuffers {
             else {int v=ram.getShort(offset)&65535;r=((v>>>11)&31)*255/31;g=((v>>>6)&31)*255/31;blue=((v>>>1)&31)*255/31;a=(v&1)!=0?255:0;}
             pixels.put((byte)r).put((byte)g).put((byte)blue).put((byte)a);
         }
-        pixels.flip();NativeD3D11.image(device,w,h,pixels);b.cpuChanged=false;b.hash=hash(b);
+        pixels.flip();NativeD3D11.image(device,w,h,pixels);b.cpuChanged=false;b.hash=hash(b);contentVersion++;
     }
     public int display(int origin) {
         for(Buffer b:buffers.values())if(origin>=b.address && origin<(long)b.address+b.bytes()) {

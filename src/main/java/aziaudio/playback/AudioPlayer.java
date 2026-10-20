@@ -9,8 +9,14 @@ final class AudioPlayer implements Runnable {
     private final AudioCode audio;
     AudioPlayer(AudioCode audio) { this.audio = audio; }
 
+    static int outputFrames(int availableBytes, double step) {
+        if (availableBytes <= 8 || step <= 0 || !Double.isFinite(step)) return 0;
+        return (int) Math.min(512, (availableBytes - 8) / (step * 4));
+    }
+
     public void run() {
         int MAX_SAMPLES = AudioCode.MAX_SIZE / 2;
+        boolean outputSuppressed = false;
         while (audio.running) {
                 if (kerneln64.state.Rewind.enabled && kerneln64.state.Rewind.held) {
                     sleep(5);
@@ -19,6 +25,15 @@ final class AudioPlayer implements Runnable {
             if (audio.line == null) {
                 sleep(1);
                 continue;
+            }
+
+            boolean suppressOutput = !kerneln64.Main.UseAudio
+                    || (AziAudioSettings.muteFastForward && kerneln64.Main.SpeedMultiplier > 1);
+            if (suppressOutput != outputSuppressed) {
+                // Muted fast-forward must not wait for the sound device to play
+                // silent buffers. Flush across transitions to avoid stale audio.
+                audio.flushOutput();
+                outputSuppressed = suppressOutput;
             }
 
             int chunk = 0;
@@ -32,21 +47,11 @@ final class AudioPlayer implements Runnable {
                         // proportionally more guest audio, preserving its sequence at 2x.
                         double step = (double) audio.sampleRate * kerneln64.Main.SpeedMultiplier / AudioCode.OUTPUT_SAMPLE_RATE;
 
-                    // Try to output 512 stereo samples (2048 bytes)
-                    int outSamples = 512;
-                    double requiredInputBytes = outSamples * step * 4 + 8;
-
-                    if (audio.m_BufferRemaining >= requiredInputBytes) {
-                        chunk = outSamples * 4;
-                    } else if (audio.m_BufferRemaining > 8 && (audio.m_AI_DMAPrimaryBytes <= 0 && audio.m_AI_DMASecondaryBytes <= 0)) {
-                        // Flush out remaining buffer samples
-                        outSamples = (int) ((audio.m_BufferRemaining - 8) / (step * 4));
-                        if (outSamples > 0) {
-                            chunk = outSamples * 4;
-                        }
-                    } else {
-                        outSamples = 0;
-                    }
+                    // At high speeds 512 output frames can require more input than
+                    // the ring can hold. Drain partial batches even with DMA queued,
+                    // otherwise both playback and the emulation producer can stall.
+                    int outSamples = outputFrames(audio.m_BufferRemaining, step);
+                    chunk = outSamples * 4;
 
                     if (chunk > 0) {
                         tempBuf = new byte[chunk];
@@ -137,11 +142,11 @@ final class AudioPlayer implements Runnable {
                 }
             }
 
-            if (chunk > 0 && tempBuf != null) {
+            if (chunk > 0 && tempBuf != null && !suppressOutput) {
                     AziAudioSettings.processOutput(tempBuf, chunk);
                 SourceDataLine output = audio.line;
                     if (audio.running && output != null && output.isOpen()) output.write(tempBuf, 0, chunk);
-            } else {
+            } else if (chunk == 0) {
                 sleep(1);
             }
         }

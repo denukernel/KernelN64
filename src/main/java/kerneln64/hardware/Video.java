@@ -76,7 +76,7 @@ public class Video {
     private int[] regDPC;
     private JFrame hWnd;
     long lastFrame;
-    private long lastTimeNano;
+    private volatile long lastTimeNano;
     private long[] frames = new long[NUM_FRAMES];
     public int currentFrame;
     private long frequency;
@@ -212,23 +212,24 @@ public class Video {
         EmulationStatus.graphicsNanos += System.nanoTime() - graphicsStart;
         
         // High-precision speed-aware frame limiter
-        if (Main.FrameLimit || Main.isFastForward) {
+        if (Main.FrameLimit) {
             long targetIntervalNano = (long)(16666667L / Main.SpeedMultiplier);
             long nextFrameTime = lastTimeNano + targetIntervalNano;
             
             long idleStart = System.nanoTime();
-            while (System.nanoTime() < nextFrameTime) {
+            while (Main.FrameLimit && System.nanoTime() < nextFrameTime) {
                 long remainingNano = nextFrameTime - System.nanoTime();
-                if (remainingNano > 2000000L) { // > 2ms, sleep for efficiency
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException ignored) {}
-                }
-                // Busy-wait for remaining sub-2ms for maximum precision
+                if (remainingNano > 200000L)
+                    java.util.concurrent.locks.LockSupport.parkNanos(remainingNano - 200000L);
+                else
+                    Thread.onSpinWait();
             }
-            lastTimeNano = System.nanoTime();
-            EmulationStatus.idleNanos += lastTimeNano - idleStart;
-        }
+            long now = System.nanoTime();
+            // Scheduler overshoot must not accumulate into a slower VI rate.
+            // Limit catch-up to one VI after a slow frame or a pause.
+            lastTimeNano = Math.max(nextFrameTime, now - targetIntervalNano);
+            EmulationStatus.idleNanos += now - idleStart;
+        } else lastTimeNano = System.nanoTime();
         
         EmulationStatus.vi();
         Rewind.onVi();

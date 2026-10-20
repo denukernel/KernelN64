@@ -20,6 +20,8 @@ public final class D3D11Plugin extends GLN64jPlugin {
     private D3DGlBridge renderer;
     private Canvas canvas;
     private int width,height;
+    private long presentedContent = -1;
+    private int presentedTarget = -1;
     @Override public void pluginConfig(JFrame parent) { D3D11Settings.show(parent); }
     @Override public void pluginAbout(JFrame parent) { JOptionPane.showMessageDialog(parent,"KernelN64 Direct3D 11\nNative D3D11 rasterizer and RDP shaders; shared N64 HLE decoder.\nFog, multisample coverage and RDRAM framebuffer feedback.\nExperimental HLE renderer; N64 sample patterns and depth are approximated."); }
     @Override public void romOpen() {
@@ -40,6 +42,7 @@ public final class D3D11Plugin extends GLN64jPlugin {
         NativeD3D11.load();this.width=width;this.height=height;device=NativeD3D11.create(null,width,height,warp);initializeDecoder();
     }
     private void initializeDecoder() {
+        presentedContent=-1;presentedTarget=-1;
         OpenGl.uc_start=OpenGl.uc_dstart=0;RDRAMSize=RDRAM.capacity();
         renderer=new D3DGlBridge(device,width,height);OpenGl.gl=renderer.gl;OpenGlGdp.hDC=null;
         OpenGlGdp.cache=new gln64j.rdp.textures.TextureCache();OpenGlGdp.combiners=new D3DCombiner(renderer);
@@ -55,7 +58,22 @@ public final class D3D11Plugin extends GLN64jPlugin {
         }
     }
     @Override public synchronized void processDList() { if(device==0)return;resize();renderer.framebuffers.beginList();OpenGl.renderDisplayList(); }
-    @Override public synchronized void updateScreen() { if(device==0)return;resize();int previous=renderer.framebuffers.selected();NativeD3D11.selectTarget(device,renderer.framebuffers.display(REG.VI_Registers[REG.VI_ORIGIN] & 0xffffff));NativeD3D11.present(device,D3D11Settings.vsync&&kerneln64.Main.SpeedMultiplier<=1);NativeD3D11.selectTarget(device,previous);gln64j.core.Rsp.gdp.changed&=~gln64j.rdp.Gdp.CHANGED_COLORBUFFER; }
+    @Override public synchronized void updateScreen() {
+        if(device==0)return;
+        resize();
+        int previous=renderer.framebuffers.selected();
+        int display=renderer.framebuffers.display(REG.VI_Registers[REG.VI_ORIGIN] & 0xffffff);
+        boolean changed=(Rsp.gdp.changed & gln64j.rdp.Gdp.CHANGED_COLORBUFFER)!=0;
+        // Many games render at 30 fps but generate 60 VI events. Avoid resolving
+        // and presenting an unchanged target twice, including during fast mode.
+        if(changed || display!=presentedTarget || renderer.framebuffers.contentVersion()!=presentedContent) {
+            NativeD3D11.selectTarget(device,display);
+            NativeD3D11.present(device,D3D11Settings.vsync&&kerneln64.Main.SpeedMultiplier<=1);
+            NativeD3D11.selectTarget(device,previous);
+            presentedTarget=display;presentedContent=renderer.framebuffers.contentVersion();
+        }
+        Rsp.gdp.changed&=~gln64j.rdp.Gdp.CHANGED_COLORBUFFER;
+    }
     @Override public synchronized void romClosed() {
         if(renderer!=null)renderer.framebuffers.close();
         if(device!=0){NativeD3D11.close(device);device=0;}renderer=null;OpenGlGdp.hDC=null;

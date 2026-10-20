@@ -72,6 +72,7 @@ def main():
     tree(ROOT / "codes", repository / "codes")
     for name in ["kerneln64-icon-source.png", "kerneln64.ico"]:
         copy(ROOT / "assets" / name, repository / "assets" / name)
+    tree(ROOT / "assets/screenshots", repository / "assets/screenshots")
     for name in ["jogl.jar", "gluegen-rt.jar", "jogl.dll", "jogl_awt.dll", "jogl_cg.dll", "gluegen-rt.dll", "KernelN64D3D11.dll"]:
         copy(ROOT / "KernelN64winportable" / name, repository / "KernelN64winportable" / name)
     copy(ROOT / "docs/Release-README.md", repository / "README.md")

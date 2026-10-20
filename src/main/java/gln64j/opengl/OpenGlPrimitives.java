@@ -300,27 +300,27 @@ final class OpenGlPrimitives {
         else
             gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL);
 
-        final int VTX = 0;
-        final int CLR = 1;
-        final int TEX = 2;
-        float[][][] v = {{vtx1, c1, tex1}, {vtx2, c2, tex2}, {vtx3, c3, tex3}};
-
-
+        // Select the existing inputs directly; avoid four arrays per triangle.
         for (int i = 0; i < 3; i++) {
-            float[][] spvert = v[i];
+            float[] position = i == 0 ? vtx1 : i == 1 ? vtx2 : vtx3;
+            float[] shade = i == 0 ? c1 : i == 1 ? c2 : c3;
+            float[] texture = i == 0 ? tex1 : i == 1 ? tex2 : tex3;
             GLVertex vertex = vertices[numVertices];
-            vertex.vtx.put(0, spvert[VTX][0]);
-            vertex.vtx.put(1, spvert[VTX][1]);
+            vertex.vtx.put(0, position[0]);
+            vertex.vtx.put(1, position[1]);
 
-            vertex.vtx.put(2, Gdp.RDP_GETOM_Z_SOURCE_SEL(Rsp.gdp.otherMode) == Gbi.G_ZS_PRIM ? zDepth * spvert[VTX][3] : spvert[VTX][2]);
-            vertex.vtx.put(3, spvert[VTX][3]);
+            vertex.vtx.put(2, Gdp.RDP_GETOM_Z_SOURCE_SEL(Rsp.gdp.otherMode) == Gbi.G_ZS_PRIM ? zDepth * position[3] : position[2]);
+            vertex.vtx.put(3, position[3]);
             
-            vertex.color.put(0, spvert[CLR][0]);
-            vertex.color.put(1, spvert[CLR][1]);
-            vertex.color.put(2, spvert[CLR][2]);
-            vertex.color.put(3, spvert[CLR][3]);
-            float w = spvert[VTX][3];
-            float fog = w <= 0 ? 255.0f : spvert[VTX][2] / w * Rsp.gsp.fog.multiplier + Rsp.gsp.fog.offset;
+            vertex.color.put(0, shade[0]);
+            vertex.color.put(1, shade[1]);
+            vertex.color.put(2, shade[2]);
+            vertex.color.put(3, shade[3]);
+            float w = position[3];
+            // Vertices behind the near plane participate in clipped triangles.
+            // Use near-plane depth rather than maximum fog for their interpolation.
+            float fogZ = position[2] < -w || w == 0 ? -1.0f : position[2] / w;
+            float fog = fogZ * Rsp.gsp.fog.multiplier + Rsp.gsp.fog.offset;
             vertex.fog.put(0, Math.max(0.0f, Math.min(255.0f, fog)));
             combiners.setConstant(vertex.color, combiners.vertex.color, combiners.vertex.alpha);
             
@@ -333,12 +333,12 @@ final class OpenGlPrimitives {
             }
             
             if (combiners.usesT0) {
-                vertex.tex0.put(0, cache.getTexS(0, spvert[TEX][0]));
-                vertex.tex0.put(1, cache.getTexT(0, spvert[TEX][1]));
+                vertex.tex0.put(0, cache.getTexS(0, texture[0]));
+                vertex.tex0.put(1, cache.getTexT(0, texture[1]));
             }
             if (combiners.usesT1) {
-                vertex.tex1.put(0, cache.getTexS(1, spvert[TEX][0]));
-                vertex.tex1.put(1, cache.getTexT(1, spvert[TEX][1]));
+                vertex.tex1.put(0, cache.getTexS(1, texture[0]));
+                vertex.tex1.put(1, cache.getTexT(1, texture[1]));
             }
             numVertices++;
         }

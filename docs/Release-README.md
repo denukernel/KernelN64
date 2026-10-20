@@ -11,12 +11,28 @@ This is a **development preview**. Super Mario 64 and Mario Kart 64 are tested g
 | Game | Status | Testing coverage |
 | --- | --- | --- |
 | Super Mario 64 | Tested — Good | Has received the most local testing. |
-| Mario Kart 64 | Tested — Good | USA version tested with GLN64j using attract-mode race savestate replays, framebuffer comparisons, and save/load checks. |
+| Mario Kart 64 | Tested — Good | USA version tested with GLN64j and experimental D3D11 using attract-mode race savestate replays, framebuffer comparisons, save/load checks, and ABI2 audio resampler checks. |
 | GameShark Pro 2.0 firmware ROM | Tested — Okay | Standalone firmware support; physical pass-through cartridge behavior is not emulated. |
 | GameShark Pro 3.3 firmware ROM | Tested — Okay | Standalone firmware support; physical pass-through cartridge behavior is not emulated. |
 | All other games and firmware versions, including Zelda titles | Untested | Compatibility has not been verified. |
 
 Tested does not mean fully compatible or verified through a complete playthrough. Results can vary by renderer, ROM revision, and scene. See the [GLN64j compatibility notes](docs/GLN64j-compatibility.md) for the Mario Kart 64 fixes and testing limits.
+
+## Gameplay screenshots
+
+User-captured scenes from the two tested games. These screenshots show specific scenes; they do not establish compatibility with other games or every renderer.
+
+### Mario Kart 64
+
+![Mario Kart 64 title screen](assets/screenshots/mario-kart-64-title.png)
+
+![Mario racing on Luigi Raceway in Mario Kart 64](assets/screenshots/mario-kart-64-gameplay.png)
+
+### Super Mario 64
+
+![Mario beside a cannon in Bob-omb Battlefield](assets/screenshots/super-mario-64-gameplay.png)
+
+![Super Mario 64 castle exterior running in KernelN64](assets/screenshots/super-mario-64-castle.png)
 
 ## Features
 

@@ -31,8 +31,20 @@ public class MenuBar extends JMenuBar {
         add(createDebugMenu());
         add(createToolsMenu());
         add(createPluginMenu());
+        add(createHelpMenu());
 
         add(Box.createHorizontalGlue()); 
+    }
+
+    private JMenu createHelpMenu() {
+        JMenu help = new JMenu("Help");
+        JMenuItem about = new JMenuItem("About KernelN64...");
+        about.addActionListener(e -> JOptionPane.showMessageDialog(Main.hMainWindow,
+                "KernelN64\nJava Nintendo 64 emulator\nDevelopment preview\n\n"
+                + "Third-party credits and licenses are included in\nTHIRD-PARTY-NOTICES.md and the licenses folder.",
+                "About KernelN64", JOptionPane.INFORMATION_MESSAGE));
+        help.add(about);
+        return help;
     }
     private JMenu createPluginMenu() {
         JMenu plugins = new JMenu("Plugins");
