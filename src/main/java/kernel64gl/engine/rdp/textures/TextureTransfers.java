@@ -28,26 +28,40 @@ final class TextureTransfers {
     private TextureTransfers() {}
 
 	static void loadTile(TextureCache state, int tile) {
+		if (tile < 0 || tile >= state.tiles.length) return;
 		InterleaveFunc Interleave;
 		int line;
 
 		state.loadTile = state.tiles[tile];
         state.stateLoadTileIndex = tile;
 
-		if (state.loadTile.line == 0)
+		if (state.loadTile.line <= 0 || state.loadTile.size < 0 || state.loadTile.size > 3
+				|| state.textureImage.size < 0 || state.textureImage.size > 3
+				|| state.loadTile.uls < 0 || state.loadTile.ult < 0 || state.textureImage.bpl < 0)
 			return;
 
-		int address = state.textureImage.address + state.loadTile.ult * state.textureImage.bpl + (state.loadTile.uls << state.textureImage.size >> 1);
-		int dest = state.loadTile.tmem << 3;
-		int bpl = (state.loadTile.lrs - state.loadTile.uls + 1) << state.loadTile.size >> 1;
-		int height = state.loadTile.lrt - state.loadTile.ult + 1;
-		int src = address;
-
-		// Stay within TMEM
-		if (((address + height * bpl) > state.rdramSize) || (((state.loadTile.tmem << 3) + bpl * height) > 4096))
-			return;
-
-
+		long width = (long) state.loadTile.lrs - state.loadTile.uls + 1;
+		long rows = (long) state.loadTile.lrt - state.loadTile.ult + 1;
+		if (width <= 0 || rows <= 0) return;
+		long rowBytes = (width << state.loadTile.size) >> 1;
+		long stride = (long) state.loadTile.line * (state.loadTile.size == G_IM_SIZ_32b ? 16 : 8);
+		long destination = (long) state.loadTile.tmem * 8;
+		int tmemLimit = Math.min(4096, state.tmem.limit());
+		// Check actual row strides, not a tightly packed width * height estimate.
+		// Validate the entire transfer before writing so rejected commands leave TMEM intact.
+		if (rowBytes <= 0 || destination < 0 || destination > tmemLimit
+				|| stride > tmemLimit || rows > tmemLimit / stride + 1
+				|| destination + (rows - 1) * stride + rowBytes > tmemLimit) return;
+		long lastOddRow = (rows - 1) % 2 == 1 ? rows - 1 : rows - 2;
+		if (lastOddRow >= 1 && destination + lastOddRow * stride + stride > tmemLimit) return;
+		long address = (long) state.textureImage.address + (long) state.loadTile.ult * state.textureImage.bpl
+				+ (((long) state.loadTile.uls << state.textureImage.size) >> 1);
+		long sourceEnd = address + (rows - 1) * state.textureImage.bpl + rowBytes;
+		if (address < 0 || sourceEnd > Math.min(state.rdramSize, state.rdram.limit())) return;
+		int dest = (int) destination;
+		int bpl = (int) rowBytes;
+		int height = (int) rows;
+		int src = (int) address;
 		byte[] rdramArray = state.rdram.array();
 		byte[] tmemArray = state.tmem.array();
 

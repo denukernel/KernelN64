@@ -337,6 +337,17 @@ public class Cpu {
     int tmpRd;
     int tmpFunct;
     boolean cacheInstructions;
+    /** Host pause reasons stay outside guest savestates. */
+    public final PauseState pauseState = new PauseState();
+    public static final class PauseState {
+        private volatile boolean manual, inactive;
+        public boolean manual() { return manual; }
+        public boolean blocked() { return manual || inactive; }
+        public void manual(boolean value) { manual = value; }
+        public void inactive(boolean value) { inactive = value; }
+        public void clear() { manual = inactive = false; }
+    }
+    public boolean isPaused() { return pauseState.blocked() || debugger.paused; }
     
     /** Creates a new instance of Cpu */
     public Cpu(Registers regs, Memory mem) {
@@ -497,9 +508,9 @@ public class Cpu {
             java.util.concurrent.FutureTask<Void> command;
             while ((command = commands.poll()) != null) command.run();
             if (!running) break;
-            if (CoreOptions.pauseOnAudioHandshake || KernelThreadMonitor.active != null || KernelThreadDialog.monitorOpen)
+            if (CoreOptions.pauseOnKernelFault || CoreOptions.pauseOnAudioHandshake || KernelThreadMonitor.active != null || KernelThreadDialog.monitorOpen)
                 KernelThreadMonitor.service(this);
-            if (!debugger.beforeInstruction()) { java.util.concurrent.locks.LockSupport.parkNanos(2_000_000); continue; }
+            if (pauseState.blocked() || !debugger.beforeInstruction()) { java.util.concurrent.locks.LockSupport.parkNanos(2_000_000); continue; }
             if (Rewind.service()) continue;
             try {
                 fetchInstruction();

@@ -264,6 +264,10 @@ public class Main {
         loadRom(currentRomFile);
     }
 
+    public static synchronized void endEmulation() throws IOException {
+        RomLifecycle.endEmulation();
+    }
+
 	public static void initializeHardware() throws MemoryException {
 		RomLifecycle.initializeHardware();
 	}

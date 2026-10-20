@@ -24,7 +24,7 @@ public final class DebuggerCore {
     public DebuggerCore(Cpu cpu) { this.cpu = cpu; paused = CoreOptions.debuggerEnabled && CoreOptions.pauseOnStart; }
     public void pause(String why) { paused = true; steps = 0; reason = why; }
     void pauseForMonitor(String why) { monitorPause = true; pause(why); }
-    public void resume() { monitorPause = false; skipPc = cpu.pc; skipOnce = true; paused = false; steps = 0; runTo = null; reason = "Running"; if(Main.video!=null)Main.video.resetTimer(); }
+    public void resume() { cpu.pauseState.manual(false); monitorPause = false; skipPc = cpu.pc; skipOnce = true; paused = false; steps = 0; runTo = null; reason = "Running"; if(Main.video!=null)Main.video.resetTimer(); }
     void step() { requirePaused(); steps++; reason = "Step"; }
     void runTo(int address) { requirePaused(); resume(); runTo = address; reason = String.format("Running to %08X",address); }
     void requirePaused() { if (!paused) throw new IllegalStateException("Pause emulation before editing or stepping."); }

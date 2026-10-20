@@ -91,3 +91,38 @@ trip without that exception. corrupted graphics remain visible. the normal sm64
 main test state also completed the same replay. targeted checks cover valid
 reads, odd-row addressing, nonzero buffer positions, truncated and empty buffers,
 negative coordinates and integer overflow at both output depths.
+
+a later corrupted rom reported `arraycopy: length -408 is negative` in
+`TextureTransfers.loadTile`. tile loads now reject reversed dimensions and
+invalid coordinates, sizes, addresses or strides before copying. validation
+covers each strided source row, destination row and odd-row interleave footprint,
+using wide arithmetic. rejected transfers leave texture memory unchanged.
+
+a focused regression reproduces the exact negative-length exception with the
+old code and passes with the validation. additional checks cover truncated
+strided ranges, address and dimension overflow, odd-row interleaving, valid
+16/32-bit transfers and exact buffer-end transfers. the supplied slot 1 and 2
+states did not reproduce the original exception during short idle replays, so
+the report and focused regression establish the failure rather than a complete
+runtime reproduction of the original input sequence.
+
+the updated castle-entry slot 2 reproduced a nonterminating display list in
+`Gsp.RSP_ProcessDList`: the graphics thread repeatedly decoded the same malformed
+commands while the emulation thread waited for it. Kernel64GL now shares a
+262144-command budget across each graphics task and its DMA lists, limits DMA
+recursion and checks command and lookahead addresses. an exhausted task returns
+normally so the host can finish its interrupt handling. this is a recovery guard
+for malformed or excessively long lists, not a repair to the corrupted game.
+normal finite lists below the budget keep their existing behavior.
+
+graphics diagnostics are capped at 64 messages per task, with budget warnings
+limited to one per five seconds. continuing past the loop also exposed an IA16
+texel overflow; byte and halfword texture/palette reads now validate buffer
+bounds, extending the earlier RGBA32 protection.
+
+the updated state completes 720 vi events and a separate 240-vi save/load replay
+with the guards. normal sm64 and mario kart saved scenes also pass 240-vi replays
+and save/load checks. targeted cases cover self-branching lists, recursive DMA,
+200000-command finite lists, translated DMA addresses, end-of-buffer lookahead
+and truncated texture reads. corrupted graphics remain and unrelated guest
+failures are still possible.

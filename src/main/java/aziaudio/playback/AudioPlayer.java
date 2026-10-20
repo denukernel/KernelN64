@@ -17,7 +17,15 @@ final class AudioPlayer implements Runnable {
     public void run() {
         int MAX_SAMPLES = AudioCode.MAX_SIZE / 2;
         boolean outputSuppressed = false;
+        boolean wasPaused = false;
         while (audio.running) {
+            if (kerneln64.Main.cpu != null && kerneln64.Main.cpu.isPaused()) {
+                if (!wasPaused) audio.flushOutput();
+                wasPaused = true;
+                sleep(5);
+                continue;
+            }
+            if (wasPaused) { audio.flushOutput(); wasPaused = false; }
                 if (kerneln64.state.Rewind.enabled && kerneln64.state.Rewind.held) {
                     sleep(5);
                     continue;

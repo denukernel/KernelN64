@@ -63,6 +63,9 @@ public class Debug {
     
     private static boolean DumpMessages;
     private static PrintWriter dumpFile;
+    private static int taskMessages;
+
+    public static void beginTask() { taskMessages = 0; }
     
     /** Creates a new instance of Debug */
     public Debug() {
@@ -95,6 +98,10 @@ public class Debug {
     }
     
     public static void DebugMsg(int type, String format, Object... args) {
+        if (taskMessages++ >= 64) {
+            if (taskMessages == 65) System.out.println("Kernel64GL: additional graphics messages suppressed for this task");
+            return;
+        }
         if (DumpMessages && dumpFile != null) {
             dumpFile.printf(format, args);
         } else {

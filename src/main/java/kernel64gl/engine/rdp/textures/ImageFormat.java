@@ -56,6 +56,15 @@ public class ImageFormat {
         tmem = mem;
     }
     
+    // Absolute reads preserve the original conversions for valid texture and palette data.
+    // A malformed coordinate may run beyond a sliced row or palette buffer.
+    private static byte readByte(ByteBuffer src, int at) {
+        return at < 0 || at >= src.limit() ? 0 : src.get(at);
+    }
+    private static short readShort(ByteBuffer src, long at) {
+        return at < 0 || at > src.limit() - 2L ? 0 : src.getShort((int)at);
+    }
+
     public static interface GetTexelFunc {
         public int GetTexel(ByteBuffer src, int x, int i, int palette);
     }
@@ -75,21 +84,21 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetCI4IA_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            int color4B = src.get((x>>1)^(i<<1))&0xFF;
+            int color4B = readByte(src,(x>>1)^(i<<1))&0xFF;
             if ((x & 1) != 0)
-                return IA88_RGBA8888(tmem.getShort((256 + (palette << 4) + (color4B & 0x0F))*8));
+                return IA88_RGBA8888(readShort(tmem,(256 + (palette << 4) + (color4B & 0x0F))*8));
             else
-                return IA88_RGBA8888(tmem.getShort((256 + (palette << 4) + (color4B >> 4))*8));
+                return IA88_RGBA8888(readShort(tmem,(256 + (palette << 4) + (color4B >> 4))*8));
         }
     };
     
     public static final GetTexelFunc GetCI4RGBA_RGBA5551 = new GetTexelFunc() {
         public final int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            int color4B = src.get((x>>1)^(i<<1))&0xFF;
+            int color4B = readByte(src,(x>>1)^(i<<1))&0xFF;
             if ((x & 1) != 0)
-                return RGBA5551_RGBA5551(tmem.getShort((256 + (palette << 4) + (color4B & 0x0F))*8))&0xFFFF;
+                return RGBA5551_RGBA5551(readShort(tmem,(256 + (palette << 4) + (color4B & 0x0F))*8))&0xFFFF;
             else
-                return RGBA5551_RGBA5551(tmem.getShort((256 + (palette << 4) + (color4B >> 4))*8))&0xFFFF;
+                return RGBA5551_RGBA5551(readShort(tmem,(256 + (palette << 4) + (color4B >> 4))*8))&0xFFFF;
         }
     };
     
@@ -109,7 +118,7 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetIA31_RGBA4444 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            int color4B = src.get((x>>1)^(i<<1))&0xFF;
+            int color4B = readByte(src,(x>>1)^(i<<1))&0xFF;
             return IA31_RGBA4444(((x & 1)!=0) ? (byte)(color4B & 0x0F) : (byte)(color4B >> 4))&0xFFFF;
         }
     };
@@ -123,7 +132,7 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetI4_RGBA4444 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            int color4B = src.get((x>>1)^(i<<1))&0xFF;
+            int color4B = readByte(src,(x>>1)^(i<<1))&0xFF;
             return I4_RGBA4444(((x & 1)!=0) ? (byte)(color4B & 0x0F) : (byte)(color4B >> 4))&0xFFFF;
         }
     };
@@ -144,7 +153,7 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetCI8RGBA_RGBA5551 = new GetTexelFunc() {
         public final int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            return RGBA5551_RGBA5551(tmem.getShort((256 + (src.get(x^(i<<1))&0xFF))*8))&0xFFFF;
+            return RGBA5551_RGBA5551(readShort(tmem,(256 + (readByte(src,x^(i<<1))&0xFF))*8))&0xFFFF;
         }
     };
     
@@ -164,13 +173,13 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetIA44_RGBA4444 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            return IA44_RGBA4444(src.get(x^(i<<1)))&0xFFFF;
+            return IA44_RGBA4444(readByte(src,x^(i<<1)))&0xFFFF;
         }
     };
     
     public static final GetTexelFunc GetI8_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            return I8_RGBA8888(src.get(x^(i<<1)));
+            return I8_RGBA8888(readByte(src,x^(i<<1)));
         }
     };
     
@@ -183,7 +192,7 @@ public class ImageFormat {
     
     public static final GetTexelFunc GetRGBA5551_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            int value=src.getShort(src.position()+(x^i)*2)&65535;
+            int value=readShort(src,src.position()+(long)(x^i)*2)&65535;
             int red=((value>>>11)&31)*255/31,green=((value>>>6)&31)*255/31,blue=((value>>>1)&31)*255/31;
             return ((value&1)!=0?0xff000000:0)|(blue<<16)|(green<<8)|red;
         }
@@ -201,20 +210,20 @@ public class ImageFormat {
             if (idx < 0) idx = 0;
             if (idx >= limit) idx = limit - 1;
 
-            return RGBA5551_RGBA5551(src.getShort(src.position()+idx*2)) & 0xFFFF;
+            return RGBA5551_RGBA5551(readShort(src,src.position()+(long)idx*2)) & 0xFFFF;
         }
     };
 
     
     public static final GetTexelFunc GetIA88_RGBA8888 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            return IA88_RGBA8888(src.getShort(src.position()+(x^i)*2));
+            return IA88_RGBA8888(readShort(src,src.position()+(long)(x^i)*2));
         }
     };
     
     public static final GetTexelFunc GetIA88_RGBA4444 = new GetTexelFunc() {
         public int GetTexel(ByteBuffer src, int x, int i, int palette) {
-            int value=src.getShort(src.position()+(x^i)*2)&65535;
+            int value=readShort(src,src.position()+(long)(x^i)*2)&65535;
             int intensity=value>>>12,alpha=(value>>>4)&15;
             return (intensity<<12)|(intensity<<8)|(intensity<<4)|alpha;
         }
@@ -236,7 +245,7 @@ public class ImageFormat {
             long offset = src.position() + (long)(x ^ i) * 4;
             if (offset < src.position() || offset > src.limit() - 4L) return 0;
             int at = (int)offset;
-            return ((src.get(at)&0xf0)<<8)|((src.get(at+1)&0xf0)<<4)|(src.get(at+2)&0xf0)|((src.get(at+3)&0xf0)>>>4);
+            return ((readByte(src,at)&0xf0)<<8)|((readByte(src,at+1)&0xf0)<<4)|(readByte(src,at+2)&0xf0)|((readByte(src,at+3)&0xf0)>>>4);
         }
     };
     

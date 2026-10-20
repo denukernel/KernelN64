@@ -72,6 +72,7 @@ public final class ApplicationStartup {
 
 		hMainWindow = new JFrame("KernelN64");
         KeyboardRouting.install();
+        EmulationControl.install();
         hMainWindow.addWindowFocusListener(new WindowAdapter(){
             public void windowLostFocus(WindowEvent event){KeyboardRouting.release();}
         });

@@ -39,3 +39,10 @@ Matching source is provided in the source ZIP distributed with this package. See
 ## Kernel64GL settings
 
 select the plugin and apply before configuring it. saved settings apply when the rom is reopened. see [the plugin guide](docs/Kernel64GL.md).
+
+## emulation controls
+
+f2 pauses or resumes the game. ctrl+e ends emulation while keeping KernelN64 open.
+settings offers interpreter and cached interpreter cpu styles, applied on the next
+rom open or restart, plus optional pause when the application window is inactive.
+manual and debugger pauses remain in effect when focus returns.

@@ -23,10 +23,20 @@ import java.awt.*;
 
 public class MenuBar extends JMenuBar {
     private StateSlotMenu stateSlots;
+    private JMenuItem pauseEmulation, endEmulation;
+    private boolean ending;
+
+    void refreshEmulationControls() {
+        if (pauseEmulation == null) return;
+        boolean running = Main.cpu != null && Main.cpu.running && !ending;
+        pauseEmulation.setEnabled(running); endEmulation.setEnabled(running);
+        pauseEmulation.setText(EmulationControl.paused() ? "Resume emulation" : "Pause emulation");
+    }
 
     public MenuBar() {
         setBorderPainted(false);
         add(createFileMenu());
+        add(createEmulationMenu());
         add(createSettingsMenu());
         add(createDebugMenu());
         add(createToolsMenu());
@@ -34,6 +44,7 @@ public class MenuBar extends JMenuBar {
         add(createHelpMenu());
 
         add(Box.createHorizontalGlue()); 
+        refreshEmulationControls();
     }
 
     private JMenu createHelpMenu() {
@@ -141,6 +152,33 @@ public class MenuBar extends JMenuBar {
         return file;
     }
 
+    private JMenu createEmulationMenu() {
+        JMenu emulation = new JMenu("Emulation");
+        JMenuItem pause = new JMenuItem("Pause emulation");
+        pauseEmulation = pause;
+        pause.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0));
+        pause.addActionListener(e -> EmulationControl.togglePause());
+        JMenuItem end = new JMenuItem("End emulation");
+        endEmulation = end;
+        end.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
+        end.addActionListener(e -> {
+            ending = true; refreshEmulationControls();
+            EmulationControl.end().whenComplete((unused,error) -> SwingUtilities.invokeLater(() -> {
+                ending = false; refreshEmulationControls();
+                if (error != null) HostMessages.error("End Emulation", error);
+            }));
+        });
+        emulation.add(pause); emulation.add(end);
+        emulation.addMenuListener(new javax.swing.event.MenuListener() {
+            public void menuSelected(javax.swing.event.MenuEvent e) {
+                refreshEmulationControls();
+            }
+            public void menuDeselected(javax.swing.event.MenuEvent e) {}
+            public void menuCanceled(javax.swing.event.MenuEvent e) {}
+        });
+        return emulation;
+    }
+
     private JMenu createSettingsMenu() {
         JMenu settings = new JMenu("Settings");
 
@@ -148,6 +186,30 @@ public class MenuBar extends JMenuBar {
         configuration.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
         configuration.addActionListener(e -> SettingsDialog.show("General"));
         settings.add(configuration);
+        JCheckBoxMenuItem inactive = new JCheckBoxMenuItem("Pause when window is inactive", CoreOptions.pauseWhenInactive);
+        inactive.addActionListener(e -> {
+            CoreOptions.pauseWhenInactive = inactive.isSelected();
+            EmulationControl.applyFocusPolicy(); Main.saveConfig();
+        });
+        settings.add(inactive);
+        JMenu cores = new JMenu("CPU core style");
+        ButtonGroup coreGroup = new ButtonGroup();
+        JRadioButtonMenuItem interpreter = new JRadioButtonMenuItem("Interpreter", !Main.CacheInstructions);
+        JRadioButtonMenuItem cached = new JRadioButtonMenuItem("Cached interpreter", Main.CacheInstructions);
+        for (JRadioButtonMenuItem core : new JRadioButtonMenuItem[]{interpreter, cached}) {
+            coreGroup.add(core); cores.add(core);
+            core.addActionListener(e -> { Main.CacheInstructions = cached.isSelected(); Main.saveConfig(); });
+        }
+        JMenuItem restartNote = new JMenuItem("Applies on next ROM open or restart"); restartNote.setEnabled(false);
+        cores.addSeparator(); cores.add(restartNote); settings.add(cores);
+        settings.addMenuListener(new javax.swing.event.MenuListener() {
+            public void menuSelected(javax.swing.event.MenuEvent e) {
+                inactive.setSelected(CoreOptions.pauseWhenInactive);
+                interpreter.setSelected(!Main.CacheInstructions); cached.setSelected(Main.CacheInstructions);
+            }
+            public void menuDeselected(javax.swing.event.MenuEvent e) {}
+            public void menuCanceled(javax.swing.event.MenuEvent e) {}
+        });
         JCheckBoxMenuItem rewind = new JCheckBoxMenuItem("Enable Rewind (hold Backspace)", Rewind.enabled);
         rewind.addActionListener(e -> { Rewind.setEnabled(rewind.isSelected()); Main.saveConfig(); });
         settings.add(rewind);

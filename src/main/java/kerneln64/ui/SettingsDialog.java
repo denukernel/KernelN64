@@ -13,7 +13,8 @@ import javax.swing.*;
 public final class SettingsDialog extends JDialog {
     private final JCheckBox audio = new JCheckBox("Enable audio", Main.UseAudio);
     private final JCheckBox tlb = new JCheckBox("Use TLB", Main.UseTlb);
-    private final JCheckBox cache = new JCheckBox("Cache instructions", Main.CacheInstructions);
+    private final JComboBox<String> cpuCore = new JComboBox<>(new String[]{"Interpreter", "Cached interpreter"});
+    private final JCheckBox pauseInactive = new JCheckBox("Pause when window is inactive", CoreOptions.pauseWhenInactive);
     private final JCheckBox hideAdvanced = new JCheckBox("Hide advanced settings", CoreOptions.hideAdvanced);
     private final JCheckBox debugger = new JCheckBox("Enable debugger", CoreOptions.debuggerEnabled);
     private final JCheckBox pauseOnStart = new JCheckBox("Start emulation paused (debugger)", CoreOptions.pauseOnStart);
@@ -52,7 +53,14 @@ public final class SettingsDialog extends JDialog {
         JPanel pages = new JPanel(cards);
         JPanel general = page("General Settings");
         general.add(audio);
+        general.add(pauseInactive);
         general.add(hideAdvanced);
+        cpuCore.setSelectedIndex(Main.CacheInstructions ? 1 : 0);
+        JPanel cpuRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        cpuRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cpuRow.add(new JLabel("CPU core style: ")); cpuRow.add(cpuCore);
+        cpuRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30)); general.add(cpuRow);
+        general.add(new JLabel("CPU changes apply on next ROM open or restart (Ctrl+R)."));
         general.add(Box.createVerticalStrut(12));
         JPanel speedRow=new JPanel(new FlowLayout(FlowLayout.LEFT,0,0));
         speedRow.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -95,7 +103,6 @@ public final class SettingsDialog extends JDialog {
         memoryRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30)); advanced.add(memoryRow);
         advanced.add(new JLabel("8 MB: standard expansion RAM. 16–64 MB: experimental hacks."));
         advanced.add(tlb);
-        advanced.add(cache);
         advanced.add(debugger);
         advanced.add(pauseOnStart);
         advanced.add(memoryErrors);
@@ -138,7 +145,9 @@ public final class SettingsDialog extends JDialog {
         FastForwardOptions.setTargetVi((Integer)fastModeVi.getValue());
         Main.UseAudio = audio.isSelected();
         Main.UseTlb = tlb.isSelected();
-        Main.CacheInstructions = cache.isSelected();
+        Main.CacheInstructions = cpuCore.getSelectedIndex() == 1;
+        CoreOptions.pauseWhenInactive = pauseInactive.isSelected();
+        EmulationControl.applyFocusPolicy();
         CoreOptions.ramMb = (Integer) ram.getSelectedItem();
         CoreOptions.hideAdvanced = hideAdvanced.isSelected();
         CoreOptions.debuggerEnabled = debugger.isSelected();
@@ -149,9 +158,6 @@ public final class SettingsDialog extends JDialog {
         Rewind.setEnabled(rewind.isSelected());
         if (Main.dma != null) Main.dma.showUnhandledMemory(Main.ShowUnhandledMemory);
         if (Main.pif != null) Main.pif.showPifRamErrors(Main.ShowPifRamErrors);
-        if (!CoreOptions.debuggerEnabled && Main.cpu != null && Main.cpu.running) {
-            Cpu current = Main.cpu; current.submitCommand(current.debugger::resume);
-        }
         String[] choices=new String[3];
         for(int i=0;i<3;i++)choices[i]=PluginSettings.CLASSES[i][plugins[i].getSelectedIndex()];
         pluginNote.setText("Applying plugin changes...");setEnabled(false);

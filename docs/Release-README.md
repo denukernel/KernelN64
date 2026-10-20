@@ -50,6 +50,18 @@ User-captured scenes from the two tested games. These screenshots show specific 
 * CPU debugger, memory tools and a guest kernel thread monitor with audio handshake diagnostics.
 * Recent ROMs and an EXE launcher for external tools.
 
+## emulation controls
+
+use **emulation > pause emulation** or **f2** to pause and resume. **end emulation**
+(**ctrl+e**) closes the current game and saves its battery data while keeping the
+application open. reopen a game from the file menu when ready.
+
+**settings > cpu core style** selects **interpreter** or **cached interpreter**
+for the next rom open or restart (**ctrl+r**). **pause when window is inactive**
+applies immediately; owned settings and debugger dialogs count as part of the
+active application. regaining focus only releases the inactive-window pause,
+so manual pauses and debugger faults remain paused.
+
 ## Kernel64GL graphics
 
 select **Kernel64GL (java opengl)** under **settings > settings > plugins**, apply,

@@ -172,6 +172,27 @@ public class Gsp {
 	private int cmd;
 	int nextCmd;
 	private boolean halt;
+	// Host bookkeeping is final so it stays outside the historical savestate schema.
+	private final TaskBudget taskBudget = new TaskBudget();
+	private static final class TaskBudget {
+		int remaining = 262144;
+		int dmaDepth;
+		long lastWarning;
+	}
+	private boolean validCommandAddress(int address) {
+		return address >= 0 && address <= Math.min(rdramSize, rdram.limit()) - 8;
+	}
+	private boolean takeCommand() {
+		if (halt) return false;
+		if (taskBudget.remaining-- > 0) return true;
+		halt = true;
+		long now = System.nanoTime();
+		if (taskBudget.lastWarning == 0 || now - taskBudget.lastWarning >= 5_000_000_000L) {
+			System.out.printf("Kernel64GL: stopped an overlong or looping display list at %08X after 262144 commands%n", PC[PCi]);
+			taskBudget.lastWarning = now;
+		}
+		return false;
+	}
 	public int[] segment = new int[16];
 	Matrix matrix = new Matrix();
 	int vertexi;
@@ -309,11 +330,14 @@ public class Gsp {
 		byte[] ram = rdram.array();
 
 		halt = false;
+		taskBudget.remaining = 262144;
+		taskBudget.dmaDepth = 0;
+		kernel64gl.engine.debug.Debug.beginTask();
 
 		OpenGlGdp.cache.reset();
 
-		while (!halt) {
-			if ((PC[PCi] + 8) > rdramSize) {
+		while (takeCommand()) {
+			if (!validCommandAddress(PC[PCi])) {
 
 				break;
 			}
@@ -330,9 +354,7 @@ public class Gsp {
 			PC[PCi] += 8;
 
 			pAddr = PC[PCi];
-			nextCmd = (ram[pAddr] << 24) | ((ram[pAddr + 1] & 0xff) << 16) | ((ram[pAddr + 2] & 0xff) << 8)
-					| (ram[pAddr + 3] & 0xff);
-			nextCmd = (nextCmd >> 24) & Gbi.SR_MASK_8;
+			nextCmd = pAddr >= 0 && pAddr <= Math.min(rdramSize, rdram.limit()) - 4 ? ram[pAddr] & 0xff : 0;
 
 			gbi.cmds[cmd].exec(w0, w1);
 		}
@@ -343,6 +365,7 @@ public class Gsp {
 	}
 
 	public int getCmd() {
+		if (!validCommandAddress(PC[PCi])) { halt = true; return 0; }
 		int w2 = rdram.getInt(PC[PCi] + 4);
 		PC[PCi] += 8;
 		return w2;
@@ -387,9 +410,9 @@ public class Gsp {
 
 	// called by F3d
 	public void gSPDisplayList(int address) {
-		if ((address + 8) > rdramSize)
+		if (!validCommandAddress(address))
 			return;
-		if (PCi < (pcStackSize - 1)) {
+		if (PCi < StrictMath.min(PC.length, pcStackSize) - 1) {
 			PCi++;
 			PC[PCi] = address;
 		}
@@ -397,7 +420,7 @@ public class Gsp {
 
 	// called by F3d
 	public void gSPBranchList(int address) {
-		if ((address + 8) > rdramSize)
+		if (!validCommandAddress(address))
 			return;
 		PC[PCi] = address;
 	}
@@ -637,27 +660,35 @@ public class Gsp {
 
 	// called by F3ddkr
 	public void gSPDMADisplayList(int dl, int n) {
-		if ((dl + (n << 3)) > rdramSize)
+		int start = RSP_SegmentToPhysical(dl);
+		long end = start + (long) n * 8;
+		if (n <= 0 || !validCommandAddress(start) || end > Math.min(rdramSize, rdram.limit())
+				|| taskBudget.dmaDepth >= PC.length)
 			return;
 
+		int savedPCi = PCi;
 		int curDL = PC[PCi];
-
-		PC[PCi] = RSP_SegmentToPhysical(dl);
-
-		while ((PC[PCi] - dl) < (n << 3)) {
-			if ((PC[PCi] + 8) > rdramSize)
+		taskBudget.dmaDepth++;
+		try {
+		PC[PCi] = start;
+		while (PC[PCi] < end && takeCommand()) {
+			if (!validCommandAddress(PC[PCi]))
 				break;
 
 			int w0 = rdram.getInt(PC[PCi]);
 			int w1 = rdram.getInt(PC[PCi] + 4);
 
 			PC[PCi] += 8;
-			nextCmd = (rdram.getInt(PC[PCi]) >> 24) & Gbi.SR_MASK_8;
+			nextCmd = validCommandAddress(PC[PCi]) ? (rdram.getInt(PC[PCi]) >> 24) & Gbi.SR_MASK_8 : 0;
 
 			gbi.cmds[(w0 >> 24) & Gbi.SR_MASK_8].exec(w0, w1);
 		}
 
-		PC[PCi] = curDL;
+		} finally {
+			PCi = savedPCi;
+			PC[PCi] = curDL;
+			taskBudget.dmaDepth--;
+		}
 	}
 
 	// called by F3ddkr

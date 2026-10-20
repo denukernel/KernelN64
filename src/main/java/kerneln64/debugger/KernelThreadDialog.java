@@ -17,6 +17,7 @@ public final class KernelThreadDialog extends JDialog {
     private final JTextArea display = new JTextArea(19, 118);
     private final JCheckBox generic = new JCheckBox("Generic libultra (experimental)");
     private final JCheckBox pauseOnFreeze = new JCheckBox("Pause on thread 4 audio fault/stall", CoreOptions.pauseOnAudioHandshake);
+    private final JCheckBox pauseOnFault = new JCheckBox("Pause on any kernel thread fault", CoreOptions.pauseOnKernelFault);
     private boolean displayedAutoPause;
     private final Timer timer;
     private final JTextArea inspection = new JTextArea(16, 100);
@@ -54,7 +55,7 @@ public final class KernelThreadDialog extends JDialog {
         audio.setEditable(false); audio.setFont(display.getFont());
         audio.setBackground(display.getBackground()); audio.setForeground(display.getForeground());
         audio.setMargin(display.getMargin());
-        tabs.addTab("Threads", displayScroll); tabs.addTab("Audio handshake", audioScroll);
+        tabs.addTab("Threads", displayScroll); tabs.addTab("Thread diagnosis", audioScroll);
         display.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 try {
@@ -73,13 +74,15 @@ public final class KernelThreadDialog extends JDialog {
         toolbar.add(scan); toolbar.add(generic); toolbar.add(new JLabel("Read-only • refresh 250 ms • click a thread row to inspect"));
         pauseOnFreeze.setToolTipText("Continues in the background and opens this monitor on a freeze. Rescan re-arms after Resume.");
         pauseOnFreeze.addActionListener(e -> { CoreOptions.pauseOnAudioHandshake = pauseOnFreeze.isSelected(); Main.saveConfig(); });
+        pauseOnFault.setToolTipText("Detects faults in every validated guest thread, including while this window is closed. Waiting or stopping alone is not a crash.");
+        pauseOnFault.addActionListener(e -> { CoreOptions.pauseOnKernelFault = pauseOnFault.isSelected(); Main.saveConfig(); });
         JButton resume = new JButton("Resume emulation");
         resume.addActionListener(e -> {
             Cpu cpu = Main.cpu;
             if (cpu != null && cpu.running) cpu.submitCommand(() -> { if (Main.cpu == cpu) cpu.debugger.resume(); });
         });
         JPanel pauseControls = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pauseControls.add(pauseOnFreeze); pauseControls.add(resume);
+        pauseControls.add(pauseOnFault); pauseControls.add(pauseOnFreeze); pauseControls.add(resume);
         pauseControls.add(new JLabel("Runs in background; opens this monitor on a freeze"));
         JPanel controls = new JPanel(new GridLayout(0, 1)); controls.add(toolbar); controls.add(pauseControls);
         add(controls, BorderLayout.NORTH);
@@ -92,7 +95,7 @@ public final class KernelThreadDialog extends JDialog {
         if (timer != null) timer.stop();
         synchronized (KernelThreadMonitor.class) {
             closed = true; monitorOpen = false;
-            if (!CoreOptions.pauseOnAudioHandshake) KernelThreadMonitor.active = null;
+            if (!CoreOptions.pauseOnAudioHandshake && !CoreOptions.pauseOnKernelFault) KernelThreadMonitor.active = null;
         }
         if (command != null) command.cancel(false);
         super.dispose();
@@ -121,8 +124,8 @@ public final class KernelThreadDialog extends JDialog {
                     Point audioPosition = audioScroll.getViewport().getViewPosition();
                     audio.setText(view.diagnosis()); audio.setCaretPosition(0);
                     SwingUtilities.invokeLater(() -> audioScroll.getViewport().setViewPosition(audioPosition));
-                    boolean warning = view.diagnosis().contains("SUSPECTED") || view.diagnosis().contains("TH4 FAULT:");
-                    tabs.setTitleAt(1, warning ? "Audio handshake (!)" : "Audio handshake");
+                    boolean warning = view.diagnosis().contains("SUSPECTED") || view.diagnosis().contains("THREAD FAULT:");
+                    tabs.setTitleAt(1, warning ? "Thread diagnosis (!)" : "Thread diagnosis");
                     boolean autoPaused = view.diagnosis().startsWith("AUTO-PAUSED:");
                     if (autoPaused && !displayedAutoPause) tabs.setSelectedIndex(1);
                     displayedAutoPause = autoPaused;
@@ -152,6 +155,7 @@ public final class KernelThreadDialog extends JDialog {
                         KernelThreadMonitor.active = session = new KernelThreadMonitor(cpu, Main.mem, allowGeneric);
                 }
                 session.setPauseOnFreeze(autoPause);
+                session.setPauseOnFault(CoreOptions.pauseOnKernelFault);
                 result.complete(session.view(discover, requested));
             } catch (RuntimeException error) { result.completeExceptionally(error); }
         });

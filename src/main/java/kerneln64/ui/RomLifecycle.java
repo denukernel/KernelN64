@@ -59,42 +59,70 @@ public final class RomLifecycle {
 	public static void CloseCpu()  {
 		if (eeprom != null)
 			eeprom.close();
+		eeprom = null;
 		if (mempak != null)
 			mempak.close();
+		mempak = null;
 		if (sram != null)
 			sram.close();
+		sram = null;
         if (flashRam != null)
             flashRam.close();
-		if (video.gfxPlugin != null)
+		flashRam = null;
+		if (video != null && video.gfxPlugin != null) {
 			video.gfxPlugin.romClosed();
-		if (audio.audioPlugin != null)
+			video.gfxPlugin = null;
+		}
+		if (audio != null && audio.audioPlugin != null) {
 			audio.audioPlugin.romClosed();
-		if (pif.controllerPlugin != null)
+			audio.audioPlugin = null;
+		}
+		if (pif != null && pif.controllerPlugin != null) {
 			pif.controllerPlugin.romClosed();
-		rsp.shutdown();
+			pif.controllerPlugin = null;
+		}
+		if (rsp != null) rsp.shutdown();
 	}
+
+    private static void stopCpu() throws IOException {
+        if (cpu == null) return;
+        Rewind.held = false;
+        cpu.running = false;
+        if (cpu.emuThread == null || !cpu.emuThread.isAlive()) return;
+        if (Thread.currentThread() == cpu.emuThread) throw new IOException("Stop emulation from a host worker thread.");
+        java.util.concurrent.locks.LockSupport.unpark(cpu.emuThread);
+        try {
+            cpu.emuThread.join(5000);
+            if (cpu.emuThread.isAlive()) throw new IOException("Emulation thread did not stop");
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while stopping emulation", interrupted);
+        }
+    }
+    public static void endEmulation() throws IOException {
+        stopCpu();
+        KeyboardRouting.release();
+        CloseCpu();
+        Rewind.clear();
+        if (cpu != null) cpu.pauseState.clear();
+        cheats.clear();
+        currentRomFile = null;
+        currentRomHash = null;
+        decompCheats = null;
+        decompCheatsRejected = sm64UsCheats = false;
+        cheatProfile = Sm64Compatibility.NONE;
+        setFastForward(false);
+        EmulationStatus.reset();
+        EmulationControl.refreshTitle();
+    }
 
 	public static void loadRom(File romFile) throws IOException, TlbException {
 		if (romFile == null || !romFile.exists()) {
             throw new IOException("ROM file not found: " + romFile);
 		}
 
-		// 1. Stop existing emulation thread
-		if (cpu.emuThread != null && cpu.emuThread.isAlive()) {
-
-            // Let queued JOGL/EDT work finish before replacing shared plugin state.
-            // Interrupting invokeAndWait leaves a graphics callback behind and is
-            // also wrapped by JOGL as a GLException rather than a normal stop.
-            Rewind.held = false;
-			cpu.running = false;
-			try {
-				cpu.emuThread.join(5000);
-                if (cpu.emuThread.isAlive()) throw new IOException("Emulation thread did not stop");
-			} catch (InterruptedException interrupted) {
-                Thread.currentThread().interrupt();
-                throw new IOException("Interrupted while stopping emulation", interrupted);
-            }
-		}
+		// Let queued graphics/EDT work finish before replacing shared plugin state.
+		stopCpu();
 		CloseCpu(); // Properly shut down plugins and save chips
         Rewind.clear(); Rewind.held = false; CrashDiagnostics.reset();
 
@@ -181,7 +209,9 @@ public final class RomLifecycle {
 
 		cpuStartTime = System.currentTimeMillis();
 		cheats.apply(mem.RDRAM, cpu, true);
+        EmulationControl.started();
         cpu.startEmulation();
+        EmulationControl.refreshTitle();
         recentRoms.add(romFile);
         saveConfig();
 		System.out.println("Started ROM: " + romFile.getName());
