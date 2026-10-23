@@ -41,7 +41,10 @@ final class Sm64MusicCodes {
             variation("octave carousel",shift(i->(i%3-1)*12),
                 "repeats low, original and high octaves by note number. keeps the current tempo."),
             variation("detuned clockwork - 168 bpm",shift(i->i%2==0?-0.25:0.25)+"\n"+tempoCode(168),
-                "alternates new notes a quarter semitone flat and sharp, with background and secondary music at 168 bpm.")
+                "alternates new notes a quarter semitone flat and sharp, with background and secondary music at 168 bpm."),
+            Sm64BurstMusicCodes.preset(),
+            Sm64BurstMusicCodes.fasterPreset(),
+            Sm64BurstMusicCodes.extremePreset()
         );
     }
     private static String pitch(java.util.function.IntToDoubleFunction value) {

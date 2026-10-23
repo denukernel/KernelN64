@@ -1,9 +1,34 @@
 # lua scripting
 
-open a game, then choose **tools > lua scripting**. use the editor or open a
-`.lua` file, then choose **run / restart**. output appears in the lower console.
-**stop** releases script controller overrides. closing the editor leaves its
-script running; ending or reopening a rom stops it. scripts never auto-run.
+open a game, then choose **tools > lua scripting**. add one or more `.lua` files,
+or create scripts in the editor, then choose **run all / restart**. the list shows
+each script and its status. selecting a script opens its editor, output and
+errors. **clear selected log** affects only that script.
+
+scripts have independent lua globals, callbacks and execution budgets. a script
+error or `emu.stop()` stops only that script; the other scripts keep running.
+**stop all** releases every script controller override and temporary memory patch. closing the editor keeps
+scripts running, and reopening it restores the workspace. ending or reopening a
+rom stops every script. files and groups never run automatically.
+
+## saved script groups
+
+**save group** stores the current script names, source text and list order in a
+`.luagroup` file, including unsaved editor text. **open group** stops the current
+scripts and restores the saved list without executing it. **run saved group**
+loads the selected group and starts its scripts together. **run all / restart**
+restarts the current list together. groups do not store roms, savestates or file
+paths, and must be explicitly opened or run.
+
+up to 32 scripts can run together. each source is limited to 256k characters;
+a saved group is limited to 1m source characters and 8 mib on disk. finished
+script logs are bounded and retained for the most recent 64 sessions. these
+limits do not grant scripts filesystem access.
+
+callbacks, guest memory writes and controller overrides follow start order.
+for overlapping controller fields, later scripts win; stopping one script
+releases only its fields, allowing earlier scripts to control them again.
+use compatible scripts together: guest ram and emulator pause state are shared.
 
 LuaJ 3.0.1 provides lua 5.2-style syntax, tables, strings, math and `bit32`.
 this emulator API uses callbacks rather than `emu.frameadvance()` loops from
@@ -22,7 +47,8 @@ event.onloadstate(function() print("state loaded") end)
 event.onstop(function() print("stopped") end)
 ```
 
-one callback per event type is supported; registering another replaces it.
+one callback per event type per script is supported; registering another replaces
+that script callback.
 pass `nil` to unregister. frame callbacks run at a CPU boundary after the
 observed video interrupt, not necessarily once per rendered game frame.
 pausing suspends frame callbacks. loading a state queues `onloadstate` and
@@ -33,7 +59,7 @@ callbacks and memory writes execute on the emulation thread.
 the current guest. `emu.getregister("pc")` also accepts `hi`, `lo` and `r0` through
 `r31`, returning their low 32 bits as unsigned numbers. `emu.pause()` pauses the
 game; use f2 or run a script calling `emu.resume()` to continue. `emu.stop()` ends
-the script. a script can be started while emulation is paused.
+only the calling script. scripts can be started while emulation is paused.
 
 ## memory
 
@@ -41,6 +67,8 @@ the script. a script can be started while emulation is paused.
 * `memory.write_u8/u16/u32(address, value)`
 * `memory.read_float(address)` and `write_float(address, value)`
 * `memory.read_bytes(address, count)` returns a 1-based table, up to 4096 bytes
+* `memory.patch_u8/u16/u32(address, value)` and `patch_float(address, value)`
+* `memory.read_original_float(address)` reads the value beneath temporary patches
 
 reads and writes are big-endian. use physical RDRAM addresses or directly mapped
 KSEG0/KSEG1 addresses such as `0x80000000` and `0xA0000000`. devices and arbitrary
@@ -48,6 +76,23 @@ TLB translations are excluded. accesses must fit entirely in configured RDRAM.
 integer writes accept signed or unsigned values that fit the access width.
 code writes invalidate the interpreter cache. framebuffer accesses use the
 existing graphics coherency hooks.
+
+use `patch_*` for temporary effects. stopping, restarting or failing a script
+releases its patches, even if its `onstop` callback fails. overlapping patches
+are tracked per script: the last write wins, and removing one owner reveals the
+remaining owner or original value. a newer game write is preserved instead
+of restoring stale data. overlapping writes support mixed access widths, while
+preserving complete game-written values. total tracked memory is limited to
+64 kib. loading a state discards old
+patch ownership before callbacks run. `read_original_float` lets audio effects
+start from the underlying pitch table instead of another effect.
+
+`write_*` now uses the same automatic cleanup as `patch_*`, including older
+saved source and script groups. no script edits or source reload are required.
+legacy `onstop` writes to owned bytes defer to this cleanup so they cannot bring
+back a stopped overlapping effect. stop all invokes legacy callbacks in reverse
+start order. stopping cannot undo game events,
+positions or audio already queued as a consequence of a script.
 
 these APIs work with sm64 and other games; game-specific RAM addresses depend
 on the exact rom revision or mod. the bundled frame-watch example only reads
@@ -117,8 +162,8 @@ tempo leaves the sound-effect player alone; pitch-table changes can also alter
 pitched sound effects. held notes can finish at their previous pitch. percussion
 can remain unchanged. do not mix these with pitch or tempo cheats.
 
-audio presets restore only bytes still matching their own last write, preserving
-newer game writes. state loads discard old ownership and recapture restored data.
+audio presets use temporary patches so overlapping effects release correctly,
+preserving newer game writes. state loads discard old ownership and recapture data.
 the visual preset lets the guest finish unsquashing after stop. none of these
 scripts writes ROM, pointers, executable instructions or save data.
 
@@ -144,3 +189,12 @@ inspection confirmed the squash effect. blj activation, A press/release cadence,
 idle release and unchanged speed were checked while paused against the loaded
 state; an actual staircase blj completion has not been verified. audio evidence
 is synthesized PCM capture, not a subjective listening comparison.
+
+
+legacy cleanup verification used unchanged older pitch scripts and an older
+saved group from the main sm64 test state. overlapping pitch effects restored
+all 128 frequency entries, including when one script stopped first. raw writes
+without an onstop callback, script failures, failed onstop callbacks and budget
+aborts also restored their changes. loading a state discarded earlier ownership;
+newer guest-written values survived cleanup. these checks did not require a ROM
+restart or replacement of the older script source.

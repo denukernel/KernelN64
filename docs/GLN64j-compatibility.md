@@ -64,3 +64,25 @@ Mario Kart 64's ABI2 audio resampler now converts the command pitch to the corre
 The follow-up used Mario Kart 64 savestate replays with both renderers, including new save/load round trips. D3D11 captures at 60, 120, and 240 VI events remained pixel-identical to the previous release in the tested race. A separate Super Mario 64 D3D11 saved-scene replay with F4 targeting 546 VI/s improved from about 71 to 120 VI/s after the feedback changes. This is a local scene measurement, not a general benchmark. F4 throughput is still limited by the CPU and rendering work; selecting a high target does not guarantee that rate. Other games remain untested.
 
 ROMs, savestates, diagnostic audio/captures, and local regression tooling stay outside the source checkout and release package. The explicitly selected gameplay screenshots in `assets/screenshots` are public documentation assets.
+
+
+## d3d11 maximized windows and captured previews
+
+d3d11 now keeps the configured render width and height when the window is
+maximized, scaling the output to the window. this avoids multiplying MSAA,
+framebuffer feedback and readback work just to enlarge the window. the default
+640 x 480 render size favors performance. enable **render at window resolution
+(slower)** in the d3d11 settings for the previous full window resolution behavior.
+render resolution changes apply during emulation.
+
+in a local hardware-device sm64 main-state replay with frame limiting disabled,
+120 VI events took about 1.45 seconds in the small window but 4.40 seconds
+maximized before this change. after the change, the maximized replay took about
+1.47 seconds, or 82 VI/s. this comparison uses a lower internal render resolution
+and does not establish performance for every game or device.
+
+captures now read the last presented resolved image instead of selecting a
+possibly cleared or unfinished render target. a savestate load previously made
+an immediate capture entirely black; the same check now preserves the displayed
+image pixel for pixel until a new frame is presented. before the first presented
+frame, capture reports no image instead of inventing a black gameplay frame.

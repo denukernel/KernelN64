@@ -357,6 +357,7 @@ public class Gsp {
 			int w1 = (ram[pAddr + 4] << 24) | ((ram[pAddr + 5] & 0xff) << 16) | ((ram[pAddr + 6] & 0xff) << 8)
 					| (ram[pAddr + 7] & 0xff);
 			cmd = (w0 >> 24) & Gbi.SR_MASK_8; // &0xff
+            kerneln64.cheats.Sm64SceneGfxCodes.observe(pAddr,w0,w1,segment[7],gbi.current!=null && gbi.current.type==Microcode.F3D);
 
 			PC[PCi] += 8;
 

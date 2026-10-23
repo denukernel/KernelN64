@@ -13,7 +13,7 @@ approximations from the described effects. The video audio was not measured or
 matched. The rake presets change note pitches; they do not recreate corrupted
 instrument samples, sample clipping, or the original ROM corruption.
 
-the companion `.cheats.txt` file contains all twelve presets for import, disabled.
+the companion `.cheats.txt` file contains the twelve pitch/tempo presets for import, disabled.
 They appear automatically in existing SM64 cheat lists on the next load, with
 custom entries and enabled selections retained. they use the existing `sound`
 category. up to four audio effects can be selected within the operation budget.
@@ -139,3 +139,21 @@ The extended-ROM Bob-omb Battlefield scene produced **90 / 190 / 228** music
 ticks per 60 VI for baseline / 240 BPM / 288 BPM. The slide scene produced
 **133 / 190 / 228**. All four presets produced different nonzero PCM and passed
 undo/fault checks in both extended scenes and the retail Bob-omb course.
+
+
+## delayed notes and catch-up bursts
+
+catalog version 3 adds **delayed notes and catch-up bursts (approximation)**,
+disabled, while preserving custom entries and existing selections. this repeats
+several seconds of delayed music progression followed by several seconds of fast
+progression. it changes tempo over time without changing pitch or note gates.
+see `SM64-Delay-Bursts-US.md` and its companion import file for the timer and
+audio-reader derivation, activation phase and verification limits.
+
+
+catalog version 4 adds **faster bursts** and **extremely fast bursts** to the delay
+preset family. their delay length and burst length remain about 4.27 seconds each;
+only the burst music progression speeds up. select one version at a time. these
+variants also patch shared sequencer countdowns during bursts, so sound-effect
+timing can change then. see `SM64-Delay-Bursts-US.md` for the verified instruction
+words, nonlinear speed behavior, restoration and test measurements.

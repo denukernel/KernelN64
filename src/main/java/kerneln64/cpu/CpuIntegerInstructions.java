@@ -34,7 +34,9 @@ final class CpuIntegerInstructions {
     }
 
     static void r4300i_ADDIU(Cpu cpu) {
-        cpu.GPR[(cpu.inst>>RT)&0x1F] = (int)cpu.GPR[(cpu.inst>>RS)&0x1F] + (short)cpu.inst;
+        int result=(int)cpu.GPR[(cpu.inst>>RS)&0x1F] + (short)cpu.inst;
+        if(Main.cheats.musicBurstShift!=0)result=Main.cheats.musicCountdown(cpu,cpu.inst,result);
+        cpu.GPR[(cpu.inst>>RT)&0x1F]=result;
     }
 
     static void r4300i_SLTI(Cpu cpu) {

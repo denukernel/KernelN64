@@ -1,0 +1,276 @@
+# KernelN64 named GameShark codes
+# Mario-head stretch preset v1
+# SM64 expanded preset catalog v2
+# SM64 music presets v4
+# SM64 music-only bursts v5
+# SM64 visual presets v1
+[CHEAT]
+NAME=GFX\Mario squash\Hold phase 1
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes squishTimer at 1. phases 1 through 16 hold rubber recovery poses; 30 holds flat scale (1.4, 0.4, 1.4). also affects movement and jumping. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=squash
+ADDRESSING=
+ENABLED=false
+8033B224 0001
+
+[CHEAT]
+NAME=GFX\Mario squash\Hold phase 8
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes squishTimer at 8. phases 1 through 16 hold rubber recovery poses; 30 holds flat scale (1.4, 0.4, 1.4). also affects movement and jumping. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=squash
+ADDRESSING=
+ENABLED=false
+8033B224 0008
+
+[CHEAT]
+NAME=GFX\Mario squash\Hold phase 16
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes squishTimer at 16. phases 1 through 16 hold rubber recovery poses; 30 holds flat scale (1.4, 0.4, 1.4). also affects movement and jumping. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=squash
+ADDRESSING=
+ENABLED=false
+8033B224 0010
+
+[CHEAT]
+NAME=GFX\Mario squash\Hold phase 30
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes squishTimer at 30. phases 1 through 16 hold rubber recovery poses; 30 holds flat scale (1.4, 0.4, 1.4). also affects movement and jumping. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=squash
+ADDRESSING=
+ENABLED=false
+8033B224 001E
+
+[CHEAT]
+NAME=Animations\Squash recovery\GS button phase 16
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. press F9 during gameplay to start the guest squash recovery animation. it advances normally after the button write. this changes scale animation, not skeletal animation IDs. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=squash
+ADDRESSING=
+ENABLED=false
+8833B224 0010
+
+[CHEAT]
+NAME=Animations\Squash recovery\GS button phase 30
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. press F9 during gameplay to start the guest squash recovery animation. it advances normally after the button write. this changes scale animation, not skeletal animation IDs. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=squash
+ADDRESSING=
+ENABLED=false
+8833B224 001E
+
+[CHEAT]
+NAME=Animations\Squash recovery\Repeat every 64 game frames
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. restarts squash from phase 30 every 64 game frames using the low byte of gGlobalTimer at 8032D5D4. uses KernelN64 conditions. game updates can affect timing. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=squash
+ADDRESSING=
+ENABLED=false
+D032D5D7 0000
+8033B224 001E
+D032D5D7 0040
+8033B224 001E
+D032D5D7 0080
+8033B224 001E
+D032D5D7 00C0
+8033B224 001E
+
+[CHEAT]
+NAME=Mario\Movement\Forward speed 16
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes MarioState.forwardVel, offset 0x54, to 16. actions can recompute speed before movement; this is not a uniform physics multiplier. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=mario-speed
+ADDRESSING=
+ENABLED=false
+8133B1C4 4180
+8133B1C6 0000
+
+[CHEAT]
+NAME=Mario\Movement\Forward speed 32
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes MarioState.forwardVel, offset 0x54, to 32. actions can recompute speed before movement; this is not a uniform physics multiplier. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=mario-speed
+ADDRESSING=
+ENABLED=false
+8133B1C4 4200
+8133B1C6 0000
+
+[CHEAT]
+NAME=Mario\Movement\Forward speed 64
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes MarioState.forwardVel, offset 0x54, to 64. actions can recompute speed before movement; this is not a uniform physics multiplier. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=mario-speed
+ADDRESSING=
+ENABLED=false
+8133B1C4 4280
+8133B1C6 0000
+
+[CHEAT]
+NAME=Mario\Movement\Rise on GS button
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. press F9 while airborne to set MarioState.vel[1], offset 0x4c, to 40. the current action still controls gravity and landing. does not force flight. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=vertical-speed
+ADDRESSING=
+ENABLED=false
+8933B1BC 4220
+8933B1BE 0000
+
+[CHEAT]
+NAME=Mario\Movement\No quicksand depth
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. freezes MarioState.quicksandDepth, offset 0xc0, at zero. floor logic can update it again. does not change collision geometry. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=
+ADDRESSING=
+ENABLED=false
+8133B230 0000
+8133B232 0000
+
+[CHEAT]
+NAME=World\Destinations\Castle grounds
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0010
+
+[CHEAT]
+NAME=World\Destinations\Castle interior
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0006
+
+[CHEAT]
+NAME=World\Destinations\Castle courtyard
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 001A
+
+[CHEAT]
+NAME=World\Destinations\Bob-omb Battlefield
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0009
+
+[CHEAT]
+NAME=World\Destinations\Whomps Fortress
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0018
+
+[CHEAT]
+NAME=World\Destinations\Cool Cool Mountain
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0005
+
+[CHEAT]
+NAME=World\Destinations\Jolly Roger Bay
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 000C
+
+[CHEAT]
+NAME=World\Destinations\Big Boos Haunt
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0004
+
+[CHEAT]
+NAME=World\Destinations\Hazy Maze Cave
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0007
+
+[CHEAT]
+NAME=World\Destinations\Lethal Lava Land
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0016
+
+[CHEAT]
+NAME=World\Destinations\Shifting Sand Land
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0008
+
+[CHEAT]
+NAME=World\Destinations\Dire Dire Docks
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0017
+
+[CHEAT]
+NAME=World\Destinations\Snowmans Land
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 000A
+
+[CHEAT]
+NAME=World\Destinations\Wet-Dry World
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 000B
+
+[CHEAT]
+NAME=World\Destinations\Tall Tall Mountain
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 0024
+
+[CHEAT]
+NAME=World\Destinations\Tiny-Huge Island
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 000D
+
+[CHEAT]
+NAME=World\Destinations\Tick Tock Clock
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 000E
+
+[CHEAT]
+NAME=World\Destinations\Rainbow Ride
+NOTE=sm64 us v1.0 / compatible us layouts. gMarioStates = 8033B170. source: n64decomp/sm64 9921382a68bb0c865e5e45eb594d9c64db59b1af include/types.h, src/game/mario.c and src/game/game_init.c. gCurrLevelNum low byte at 8032DDF9. enter a painting, press A at star select, then hold L during the fade. choose one destination, including existing Level Select entries. redirects a transition, not an immediate warp or geometry edit. source: project64 Config/Cheats/Super Mario 64 (U).cht. enable during gameplay. disable to release owned bytes; newer guest writes may prevent restoring the initial value. restore a clean state if an action persists. source and encoding checked; gameplay runtime verification pending.
+GROUP=level
+ADDRESSING=
+ENABLED=false
+D033AFA1 0020
+8032DDF9 000F
+

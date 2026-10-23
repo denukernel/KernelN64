@@ -202,3 +202,13 @@ without replacing the CPU or graphics plugin. they also changed resolution,
 texture enable, cache budget/precision, culling, depth testing, wireframe and batch
 size in the same running ROM, with no GL errors. host cache cleanup preserves
 the dummy texture as well as the guest texture descriptors.
+
+## sustained fast mode
+
+texture lookup uses crc buckets with the existing full texture comparisons and
+most-recent-first ordering. eviction removes the actual victim size, including
+when the permanent dummy is the oldest texture, and a dummy-only cache cannot
+spin during pruning. the host index resets with the graphics cache.
+
+unassigned f4 and shift speed controls remain available while a controller
+modifier such as ctrl is held. explicit controller bindings still take priority.

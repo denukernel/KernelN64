@@ -270,8 +270,7 @@ final class TextureUploads {
 
 		// END safety block
 
-		CachedTexture tex = kernel64gl.engine.config.RendererSettings.cacheTextures ? state.stack.top : null;
-		while (tex != null) {
+		for (CachedTexture tex : kernel64gl.engine.config.RendererSettings.cacheTextures ? state.stack.candidates(crc) : java.util.List.<CachedTexture>of()) {
 
 			// ⚠ SKIP unsafe cached textures (corrupted by TMEM chaos)
 			if (tex.width < 1 || tex.height < 1 || tex.width > 2048 || tex.height > 2048 || tex.clampWidth < 1
@@ -280,7 +279,6 @@ final class TextureUploads {
 					|| tex.clampT < 0 || tex.clampS > 1 || tex.clampT > 1) {
 
 				// skip broken entry
-				tex = tex.lower;
 				continue;
 			}
 
@@ -297,7 +295,6 @@ final class TextureUploads {
 				return;
 			}
 
-			tex = tex.lower;
 		}
 
 		state.misses++;
@@ -359,6 +356,7 @@ final class TextureUploads {
 		state.current[t].load(IA16, state.textureBitDepth, state.tmem, state.gl);
 		state.activateTexture(t, state.current[t], linear);
 		state.cachedBytes += state.current[t].textureBytes;
+        state.stack.index(state.current[t]);
 	}
 
 	static void updateBackground(TextureCache state, boolean IA16, boolean linear) {
@@ -376,8 +374,7 @@ final class TextureUploads {
 		int crc = (int) state.crc32.getValue();
 
 		// find and activate bgImage
-		CachedTexture tex = kernel64gl.engine.config.RendererSettings.cacheTextures ? state.stack.top : null;
-		while (tex != null) {
+		for (CachedTexture tex : kernel64gl.engine.config.RendererSettings.cacheTextures ? state.stack.candidates(crc) : java.util.List.<CachedTexture>of()) {
 			if ((tex.crc == crc) && (tex.width == state.bgImage.width) && (tex.height == state.bgImage.height)
 					&& (tex.format == state.bgImage.format) && (tex.size == state.bgImage.size)) {
 				state.activateTexture(0, tex, linear);
@@ -385,7 +382,6 @@ final class TextureUploads {
 				return;
 			}
 
-			tex = tex.lower;
 		}
 
 		// bgImage not found
@@ -429,18 +425,17 @@ final class TextureUploads {
 				state.bgImage.address);
 		state.activateTexture(0, state.current[0], linear);
 		state.cachedBytes += state.current[0].textureBytes;
+        state.stack.index(state.current[0]);
 	}
 
 	static void prune(TextureCache state) {
 		while (state.cachedBytes > state.maxBytes) {
-			if (state.stack.bottom != state.dummy) {
-				state.cachedBytes -= state.stack.bottom.textureBytes;
-				state.stack.removeBottom();
-			} else if (state.dummy.higher != null) {
-				state.stack.remove(state.dummy.higher);
-				state.cachedBytes -= state.dummy.higher.textureBytes;
-			}
-			// may need else, can get stuck in this loop
+            CachedTexture victim=state.stack.bottom;
+            if(victim==state.dummy)victim=victim.higher;
+            // The dummy is permanent. Do not spin if it is the only entry.
+            if(victim==null)break;
+            state.cachedBytes-=victim.textureBytes;
+            state.stack.remove(victim);
 		}
 	}
 

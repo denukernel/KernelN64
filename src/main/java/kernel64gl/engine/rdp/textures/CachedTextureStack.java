@@ -31,15 +31,31 @@ public class CachedTextureStack {
     public CachedTexture top;
     public CachedTexture bottom;
     private int numCached;
+    private final java.util.Map<Integer,java.util.LinkedHashSet<CachedTexture>> byCrc=new java.util.HashMap<>();
+
+    // Uploaded fields are assigned after addTop. Publish only the complete key.
+    void index(CachedTexture texture) {
+        byCrc.computeIfAbsent(texture.crc,unused->new java.util.LinkedHashSet<>()).add(texture);
+    }
+    Iterable<CachedTexture> candidates(int crc) {
+        var bucket=byCrc.get(crc);
+        return bucket==null?java.util.List.of():bucket.reversed();
+    }
+    private void unindex(CachedTexture texture) {
+        var bucket=byCrc.get(texture.crc);
+        if(bucket!=null){bucket.remove(texture);if(bucket.isEmpty())byCrc.remove(texture.crc);}
+    }
     
     public void init(GL gl) {
         this.gl = gl;
         top = null;
         bottom = null;
         numCached = 0;
+        byCrc.clear();
     }
     
     public void removeBottom() {
+        unindex(bottom);
         gl.glDeleteTextures(1, bottom.glName, 0);
         if (bottom == top)
             top = null;
@@ -53,6 +69,7 @@ public class CachedTextureStack {
     }
     
     public void remove(CachedTexture texture) {
+        unindex(texture);
         if ((texture == bottom) && (texture == top)) {
             top = null;
             bottom = null;
@@ -95,6 +112,8 @@ public class CachedTextureStack {
     public void moveToTop(CachedTexture newtop) {
         if (newtop == top)
             return;
+        var bucket=byCrc.get(newtop.crc);
+        if(bucket!=null && bucket.remove(newtop))bucket.add(newtop);
         
         if (newtop == bottom) {
             bottom = newtop.higher;

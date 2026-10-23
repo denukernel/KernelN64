@@ -28,6 +28,9 @@ public final class KeyboardRouting {
         // Releases for an unassigned hotkey must still reach its listener even
         // if the player pressed a controller modifier in the meantime.
         if(event.getID()==KeyEvent.KEY_RELEASED && !mapped)return false;
+        // Speed controls remain available while a controller modifier (such as
+        // the default Ctrl R trigger) is held. Explicit game bindings still win.
+        if(!mapped && (event.getKeyCode()==KeyEvent.VK_F4 || event.getKeyCode()==KeyEvent.VK_SHIFT))return false;
         boolean controllerModifier=keyboard.controllerModifierDown();
         if(!mapped && !controllerModifier)return selectSlot(event);
         if(mapped) {

@@ -14,8 +14,11 @@ import java.util.*;
 public final class CheatEngine {
     private record Code(int command, int value) {}
     private static final List<Code> HEAD_PROGRAM=Arrays.stream(Sm64HeadStretch.PAIRS).map(pair->new Code(pair[0],pair[1])).toList();
+    private static final List<Code> DISPLAY_LIST_GUARDS=Arrays.stream(Sm64DisplayListCodes.GUARDS).map(g->new Code(0xD1000000|g[0],g[1])).toList();
     private volatile List<List<Code>> programs = List.of();
     private volatile boolean button;
+    public volatile int musicBurstShift;
+    public int musicCountdown(Cpu cpu,int instruction,int normal){return Sm64BurstMusicCodes.countdown(cpu,trackedRam,musicBurstShift,instruction,normal);}
     private boolean runtimeReady;
     private boolean sm64Legacy;
     private Sm64DecompCodes build;
@@ -70,9 +73,9 @@ public final class CheatEngine {
     private static void footprint(Map<Integer,Integer> bytes,int address,int size,int value) {
         for(int i=0;i<size;i++){int b=value>>>((size-1-i)*8)&255;bytes.merge(address+i,b,(old,next)->old.equals(next)?old:-1);}
     }
-    public void clear() { programs = List.of(); button = false; patches.clear();trackedRam=null;resetBootPhase(); }
+    public void clear() { programs = List.of(); musicBurstShift=0; button = false; patches.clear();trackedRam=null;resetBootPhase(); }
     public void pressButton() { button = true; }
-    public void resetBootPhase() { runtimeReady = false; }
+    public void resetBootPhase() { musicBurstShift=0;runtimeReady = false; }
     public boolean hasSamplePrograms() { return programs.stream().anyMatch(this::sampleProgram); }
 
     /** VI also runs during IPL3, while the boot code still verifies RDRAM. */
@@ -92,6 +95,7 @@ public final class CheatEngine {
     }
 
     public void setCodes(String text) {
+        text=Sm64BurstMusicCodes.upgrade(text);
         if(text.lines().anyMatch(line->line.strip().equalsIgnoreCase("[CHEAT]"))) {
             var entries=CheatRepository.parseStructure(text);
             var mixed=Sm64AudioMixer.compile(entries,build,sm64Legacy);
@@ -141,11 +145,12 @@ public final class CheatEngine {
             if(type==0xE0 || type==0xE1 || type==0xE8 || type==0xE9 || type==0xC8 || type==0xC9) {
                 command=decodeAddress(command);value=decodeValue(value);type=command>>>24;
             }
-            if (type != 0x80 && type != 0x81 && type != 0xA0 && type != 0xA1
+            if (type != 0xB0 && type != 0x80 && type != 0x81 && type != 0xA0 && type != 0xA1
                     && type != 0xD0 && type != 0xD1 && type != 0xD2 && type != 0xD3
                     && type != 0x50 && type != 0x88 && type != 0x89 && type != 0xF0 && type != 0xF1)
                 throw new IllegalArgumentException(String.format("Unsupported GameShark type %02X on line %d", type, lineNumber));
             if(type==0x50 && (command&0xFFFF0000)!=0x50000000)throw new IllegalArgumentException("Invalid repeat header on line "+lineNumber+": expected 5000CCSS (the old 5032 camera prefix is not a standard repeater)");
+            if(type==0xB0 && (command!=0xB0222618 || (value!=1 && value!=2)))throw new IllegalArgumentException("Invalid KernelN64 music countdown extension");
             if (type != 0x50 && ((command & 0xFFFFFF) >= 0x800000
                     || (!sm64Legacy && (type & 1) != 0 && (command & 1) != 0)))
                 throw new IllegalArgumentException("Invalid RDRAM address or unaligned halfword on line " + lineNumber);
@@ -175,6 +180,7 @@ public final class CheatEngine {
                 }
             }
         }
+        musicBurstShift=0;
         programs = List.copyOf(parsed); // Publish only after the entire input validates.
     }
 
@@ -190,13 +196,13 @@ public final class CheatEngine {
         List<List<Code>> selected=programs;reconcile(ram,cpu,selected);execute(ram,cpu,boot,selected);
     }
     /** Guest memory is modified only by this method/VI on the emulation thread. */
-    public void synchronize(ByteBuffer ram,Cpu cpu) { reconcile(ram,cpu,programs); }
+    public void synchronize(ByteBuffer ram,Cpu cpu) { musicBurstShift=0;reconcile(ram,cpu,programs); }
     private void reconcile(ByteBuffer ram,Cpu cpu,List<List<Code>> selected) {
-        if(trackedRam!=ram){patches.clear();trackedRam=ram;}
+        if(trackedRam!=ram){musicBurstShift=0;patches.clear();trackedRam=ram;}
         Set<List<Code>> wanted=new HashSet<>(selected);
         Map<List<Code>,Boolean> sampleBooks=new IdentityHashMap<>();
         for(Patch patch:patches.values())for(List<Code> owner:patch.owners.keySet())
-            if(sampleProgram(owner) && !sampleBooks.containsKey(owner))sampleBooks.put(owner,sampleBookAlive(owner,ram));
+            if((sampleProgram(owner) || displayListProgram(owner) || sceneProgram(owner)) && !sampleBooks.containsKey(owner))sampleBooks.put(owner,sampleBookAlive(owner,ram));
         boolean headOverlay=Sm64HeadStretch.matches(ram,build);
         var iterator=patches.entrySet().iterator();
         while(iterator.hasNext()) {
@@ -236,6 +242,20 @@ public final class CheatEngine {
             && program.get(2).command==0xD131CE68 && program.get(2).value==0x8C42
             && program.get(3).command==0xD131CE6A && program.get(3).value==0x6B60;
     }
+    private static boolean displayListProgram(List<Code> program) {
+        return program.size()>DISPLAY_LIST_GUARDS.size()
+            && program.subList(0,DISPLAY_LIST_GUARDS.size()).equals(DISPLAY_LIST_GUARDS);
+    }
+    private boolean sceneProgram(List<Code> program) {
+        int levelAddress=0x32DDF8;
+        if(build!=null)try{levelAddress=build.address(levelAddress,2);}catch(IllegalArgumentException unsupported){return false;}
+        if(program.size()<=10 || !program.get(0).equals(program.get(1)) || program.get(0).command!=(0xD1000000|levelAddress))return false;
+        for(int start:new int[]{2,6}) {
+            if(program.get(start).value>>>8!=4)return false;
+            for(int i=0;i<4;i++)if(program.get(start+i).command!=program.get(start).command+i*2 || program.get(start+i).command>>>24!=0xD1)return false;
+        }
+        return true;
+    }
     private static boolean sampleBookAlive(List<Code> program,ByteBuffer ram) {
         for(Code code:program) {
             int type=code.command>>>24;if(type<0xD0 || type>0xD3)return true;
@@ -247,6 +267,7 @@ public final class CheatEngine {
         return false;
     }
     private void execute(ByteBuffer ram,Cpu cpu,boolean boot,List<List<Code>> selected) {
+        musicBurstShift=0;
         boolean pressed = button;
         button = false;
         for (List<Code> program : selected) {
@@ -270,6 +291,8 @@ public final class CheatEngine {
                             write(ram, cpu, program, (target.command & 0xFFFFFF) + n * (code.command & 0xFF),
                                     (target.command >>> 24 & 1) + 1, target.value + n * code.value);
                     }
+                } else if (type==0xB0) {
+                    if(execute && !boot && Sm64BurstMusicCodes.supported(ram))musicBurstShift=code.value;
                 } else if (execute && ((type == 0xF0 || type == 0xF1) == boot)
                         && ((type != 0x88 && type != 0x89) || pressed)) {
                     write(ram, cpu, program, address, (type & 1) + 1, code.value);
@@ -330,7 +353,7 @@ public final class CheatEngine {
         return state;
     }
     public void restoreUndo(UndoState state,ByteBuffer ram) {
-        patches.clear();trackedRam=ram;
+        musicBurstShift=0;patches.clear();trackedRam=ram;
         if(state!=null)patches.putAll(state.patches);
         resetBootPhase();
     }

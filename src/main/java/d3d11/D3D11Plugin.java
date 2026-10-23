@@ -53,9 +53,16 @@ public final class D3D11Plugin extends GLN64jPlugin {
         gln64j.core.Rsp.gsp.changed=gln64j.core.Rsp.gdp.changed=-1;
     }
     private void resize() {
-        if(canvas!=null&&canvas.getWidth()>0&&canvas.getHeight()>0&&(canvas.getWidth()!=width||canvas.getHeight()!=height)) {
-            D3DFramebuffers.capture();renderer.framebuffers.reset();width=canvas.getWidth();height=canvas.getHeight();NativeD3D11.resize(device,width,height);OpenGlGdp.setDrawableSize(width,height);renderer.width=width;renderer.height=height;
+        if(canvas==null||canvas.getWidth()<1||canvas.getHeight()<1)return;
+        int nextWidth=D3D11Settings.matchWindow?canvas.getWidth():D3D11Settings.width;
+        int nextHeight=D3D11Settings.matchWindow?canvas.getHeight():D3D11Settings.height;
+        if(nextWidth!=width||nextHeight!=height) {
+            D3DFramebuffers.capture();renderer.framebuffers.reset();width=nextWidth;height=nextHeight;
+            NativeD3D11.resize(device,width,height);OpenGlGdp.setDrawableSize(width,height);renderer.width=width;renderer.height=height;
         }
+        // A windowed DXGI swap chain scales its back buffer to the canvas. Keep
+        // expensive MSAA, feedback and readback at the selected render size.
+
     }
     @Override public synchronized void processDList() { if(device==0)return;resize();renderer.framebuffers.beginList();OpenGl.renderDisplayList(); }
     @Override public synchronized void updateScreen() {
@@ -81,10 +88,12 @@ public final class D3D11Plugin extends GLN64jPlugin {
     }
     @Override public void closePlugin() { romClosed(); }
     public synchronized BufferedImage screenshot() {
-        int previous=renderer.framebuffers.selected();
-        NativeD3D11.selectTarget(device,renderer.framebuffers.display(REG.VI_Registers[REG.VI_ORIGIN]&0xffffff));
-        byte[] rgba=NativeD3D11.read(device);NativeD3D11.selectTarget(device,previous);BufferedImage image=new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
-        for(int y=0;y<height;y++)for(int x=0;x<width;x++){int i=(y*width+x)*4;image.setRGB(x,y,((rgba[i]&255)<<16)|((rgba[i+1]&255)<<8)|(rgba[i+2]&255));}return image;
+        if(device==0)return null;
+        int[] pixels=NativeD3D11.readPresented(device);
+        if(pixels==null)return null;
+        BufferedImage image=new BufferedImage(pixels[0],pixels[1],BufferedImage.TYPE_INT_RGB);
+        image.setRGB(0,0,pixels[0],pixels[1],pixels,2,pixels[0]);
+        return image;
     }
     public synchronized void preview(BufferedImage image) {
         ByteBuffer rgba=ByteBuffer.allocateDirect(image.getWidth()*image.getHeight()*4);

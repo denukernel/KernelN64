@@ -50,5 +50,7 @@ public final class NativeD3D11 {
     public static native void draw(long device, float[] vertices, int primitive, int[] state, float[] constants);
     public static native void present(long device, boolean vsync);
     public static native byte[] read(long device);
+    /** Width, height, then RGB pixels of the most recently presented frame. */
+    public static native int[] readPresented(long device);
     public static native void image(long device, int width, int height, ByteBuffer rgba);
 }

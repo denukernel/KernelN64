@@ -23,6 +23,8 @@ struct Surface { ComPtr<ID3D11Texture2D> color, multisample; ComPtr<ID3D11Render
 struct Renderer {
  ComPtr<ID3D11Device> device; ComPtr<ID3D11DeviceContext> context; ComPtr<IDXGISwapChain> swap;
  ComPtr<ID3D11Texture2D> color, multisample, depth, staging, feedback; ComPtr<ID3D11ShaderResourceView> feedbackView; ComPtr<ID3D11RenderTargetView> target; ComPtr<ID3D11DepthStencilView> depthView;
+ // Preserve the resolved surface shown to the user across target/state resets.
+ ComPtr<ID3D11Texture2D> presented, presentedStaging;
  ComPtr<ID3D11VertexShader> vertexShader; ComPtr<ID3D11PixelShader> pixelShader; ComPtr<ID3D11InputLayout> layout;
  ComPtr<ID3D11Buffer> vertices, constants; size_t vertexBytes=0;
  std::map<int,Texture> textures;
@@ -207,12 +209,30 @@ extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_draw(JNIEnv* env,jclass
   for(size_t i=0;i+2<count;i+=3)draw(r,vertices.data()+i*13,3,primitive,state,constants);
  }else draw(r,vertices.data(),count,primitive,state,constants);}catch(const std::exception& error){failure(env,error);}
 }
-extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_present(JNIEnv* env,jclass,jlong pointer,jboolean vsync){try{auto& r=renderer(pointer);r.resolve();if(r.swap){ComPtr<ID3D11Texture2D> back;check(r.swap->GetBuffer(0,IID_PPV_ARGS(&back)),"Get swap buffer");r.context->CopyResource(back.Get(),r.color.Get());check(r.swap->Present(vsync?1:0,0),"Present");}else r.context->Flush();}catch(const std::exception& error){failure(env,error);}}
+extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_present(JNIEnv* env,jclass,jlong pointer,jboolean vsync){try{auto& r=renderer(pointer);r.resolve();r.presented=r.color;if(r.swap){ComPtr<ID3D11Texture2D> back;check(r.swap->GetBuffer(0,IID_PPV_ARGS(&back)),"Get swap buffer");r.context->CopyResource(back.Get(),r.color.Get());check(r.swap->Present(vsync?1:0,0),"Present");}else r.context->Flush();}catch(const std::exception& error){failure(env,error);}}
 extern "C" JNIEXPORT jbyteArray JNICALL Java_d3d11_NativeD3D11_read(JNIEnv* env,jclass,jlong pointer){try{auto& r=renderer(pointer);r.resolve();if(!r.staging){D3D11_TEXTURE2D_DESC desc;r.color->GetDesc(&desc);desc.Usage=D3D11_USAGE_STAGING;desc.BindFlags=0;desc.CPUAccessFlags=D3D11_CPU_ACCESS_READ;check(r.device->CreateTexture2D(&desc,nullptr,&r.staging),"Create readback texture");}
  r.context->CopyResource(r.staging.Get(),r.color.Get());D3D11_MAPPED_SUBRESOURCE map;check(r.context->Map(r.staging.Get(),0,D3D11_MAP_READ,0,&map),"Read frame");
  std::vector<jbyte> pixels((size_t)r.width*r.height*4);for(int y=0;y<r.height;y++)memcpy(pixels.data()+(size_t)y*r.width*4,(char*)map.pData+(size_t)y*map.RowPitch,(size_t)r.width*4);r.context->Unmap(r.staging.Get(),0);
  jbyteArray result=env->NewByteArray((jsize)pixels.size());env->SetByteArrayRegion(result,0,(jsize)pixels.size(),pixels.data());return result;
  }catch(const std::exception& error){failure(env,error);return nullptr;}}
+extern "C" JNIEXPORT jintArray JNICALL Java_d3d11_NativeD3D11_readPresented(JNIEnv* env,jclass,jlong pointer){
+ try {
+  auto& r=renderer(pointer);if(!r.presented)return nullptr;
+  D3D11_TEXTURE2D_DESC desc;r.presented->GetDesc(&desc);
+  if(r.presentedStaging){D3D11_TEXTURE2D_DESC previous;r.presentedStaging->GetDesc(&previous);if(previous.Width!=desc.Width||previous.Height!=desc.Height)r.presentedStaging.Reset();}
+  if(!r.presentedStaging){desc.Usage=D3D11_USAGE_STAGING;desc.BindFlags=0;desc.CPUAccessFlags=D3D11_CPU_ACCESS_READ;check(r.device->CreateTexture2D(&desc,nullptr,&r.presentedStaging),"Create presented readback");}
+  r.context->CopyResource(r.presentedStaging.Get(),r.presented.Get());
+  size_t count=(size_t)desc.Width*desc.Height;
+  std::vector<jint> pixels(count+2);pixels[0]=desc.Width;pixels[1]=desc.Height;
+  D3D11_MAPPED_SUBRESOURCE map;check(r.context->Map(r.presentedStaging.Get(),0,D3D11_MAP_READ,0,&map),"Read presented frame");
+  for(UINT y=0;y<desc.Height;y++){
+   auto row=(const unsigned char*)map.pData+(size_t)y*map.RowPitch;
+   for(UINT x=0;x<desc.Width;x++){auto rgba=row+x*4;pixels[2+(size_t)y*desc.Width+x]=(rgba[0]<<16)|(rgba[1]<<8)|rgba[2];}
+  }
+  r.context->Unmap(r.presentedStaging.Get(),0);
+  jintArray result=env->NewIntArray((jsize)pixels.size());if(result)env->SetIntArrayRegion(result,0,(jsize)pixels.size(),pixels.data());return result;
+ }catch(const std::exception& error){failure(env,error);return nullptr;}
+}
 extern "C" JNIEXPORT void JNICALL Java_d3d11_NativeD3D11_image(JNIEnv* env,jclass,jlong pointer,jint w,jint h,jobject buffer){try{auto& r=renderer(pointer);void* data=env->GetDirectBufferAddress(buffer);if(!data||env->GetDirectBufferCapacity(buffer)<(jlong)w*h*4)throw std::runtime_error("Invalid preview buffer");r.upload(-1,w,h,data);
  float vertices[]={-1,1,0,1,1,1,1,1,0,0,0,0,0, 1,1,0,1,1,1,1,1,1,0,0,0,0, 1,-1,0,1,1,1,1,1,1,1,0,0,0, -1,1,0,1,1,1,1,1,0,0,0,0,0, 1,-1,0,1,1,1,1,1,1,1,0,0,0, -1,-1,0,1,1,1,1,1,0,1,0,0,0};
  int state[25]={};state[2]=519;state[15]=r.width;state[16]=r.height;state[17]=-1;state[19]=9728;state[20]=state[21]=33071;state[22]=9728;state[23]=state[24]=33071;

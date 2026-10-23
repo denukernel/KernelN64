@@ -17,6 +17,8 @@ public final class Sm64DecompCodes {
     // n64decomp 9921382a build. Address materialization and J/JAL targets normalize;
     // branch distances, registers, stack/struct offsets and other instructions do not.
     private static final Function[] FUNCTIONS={
+        new Function("sequence_channel_process_script",0x31D08C,0x960,"be60477a17c819753ecdf5b36944b9c0f8ec0ac4e3d3448da9e30cfef016448d"),
+        new Function("display_and_vsync",0x248090,0x150,"77a13293d0cca3d33bfd3eb9aaafa342f9378cbbd6a65e3b0fa60925787c054a"),
         new Function("note_vibrato_init",0x31B4A0,0xEC,"b0c7c20b4efb2c3d47486e107a87455de3311e651b5f621985affb10d4ec9476"),
         new Function("get_vibrato_freq_scale",0x31B248,0x1F8,"78c0fa916862b123aff4fd6fa051e6f461ae63d1e3184c1b2377cfaa003b3a77"),
         new Function("seq_channel_layer_process_script",0x31C0C4,0xD90,"13d88027ecb42516f86f1c34c6d1eb285e958ce6582f6853ee989971f3c2ac10"),
@@ -33,7 +35,7 @@ public final class Sm64DecompCodes {
     private static final Map<Integer,Integer> STOCK_GUARDS=stockGuards();
     private static Map<Integer,Integer> stockGuards() {
         Map<Integer,Integer> result=new HashMap<>();
-        for(int[][] signature:new int[][][]{Sm64AudioCodes.SIGNATURE,Sm64MusicCodes.SIGNATURE,Sm64SampleCodes.SIGNATURE,Sm64HeadStretch.SIGNATURE})
+        for(int[][] signature:new int[][][]{Sm64AudioCodes.SIGNATURE,Sm64MusicCodes.SIGNATURE,Sm64BurstMusicCodes.SIGNATURE,Sm64BurstMusicCodes.COUNTDOWN_SIGNATURE,Sm64SampleCodes.SIGNATURE,Sm64HeadStretch.SIGNATURE})
             for(int[] site:signature){result.put(site[0],site[1]>>>16);result.put(site[0]+2,site[1]&65535);}
         return Map.copyOf(result);
     }
@@ -49,6 +51,7 @@ public final class Sm64DecompCodes {
         data(elf,"gNoteFrequencies",0x333994,0x200);
         data(elf,"gVibratoCurve",0x333BB4,0x10);
         data(elf,"gSequencePlayers",0x222618,0x3C0);
+        data(elf,"gGlobalTimer",0x32D5D4,4);
         data(elf,"gBankLoadStatus",0x2214D0,0x40);
         data(elf,"gCtlEntries",0x226B60,4);
         for(Function function:FUNCTIONS) {

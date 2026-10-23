@@ -67,7 +67,7 @@ public final class CheatDialog extends JDialog {
         button(tools,"Add...",()->edit(null));button(tools,"Edit...",this::edit);button(tools,"Delete",this::remove);button(tools,"Import...",this::importCodes);
         if(Main.sm64UsCheats)button(tools,"Presets",()->{for(var preset:CheatRepository.presets())if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);publish();rebuild();});button(tools,"Unmark All",()->{for(var entry:entries)entry.enabled=false;publish();tree.repaint();});
         JPanel toolRows=new JPanel(new GridLayout(0,1));toolRows.add(tools);
-        if(Main.sm64UsCheats){JPanel sampleTools=new JPanel(new FlowLayout(FlowLayout.LEFT,4,0));button(sampleTools,"Build Sample Codes",this::generateSamples);toolRows.add(sampleTools);}
+        if(Main.sm64UsCheats){JPanel sampleTools=new JPanel(new FlowLayout(FlowLayout.LEFT,4,0));button(sampleTools,"Build Sample Codes",this::generateSamples);button(sampleTools,"Build GFX Codes",this::generateGfx);toolRows.add(sampleTools);}
         lower.add(toolRows,BorderLayout.NORTH);notes.setEditable(false);notes.setLineWrap(true);notes.setWrapStyleWord(true);JScrollPane notePane=new JScrollPane(notes);notePane.setBorder(BorderFactory.createTitledBorder("Notes"));lower.add(notePane);
         JSplitPane split=new JSplitPane(JSplitPane.VERTICAL_SPLIT,new JScrollPane(tree),lower);split.setResizeWeight(0.75);content.add(split);
         JPanel bottom=new JPanel(new BorderLayout());bottom.add(status);JButton close=new JButton("Close");close.addActionListener(e->dispose());bottom.add(close,BorderLayout.EAST);content.add(bottom,BorderLayout.SOUTH);
@@ -76,6 +76,30 @@ public final class CheatDialog extends JDialog {
         if(Main.sm64UsCheats)SwingUtilities.invokeLater(this::generateSamples);
     }
     private boolean buildingSamples;
+    private boolean buildingGfx;
+    private void generateGfx() {
+        if(buildingGfx)return;
+        Cpu cpu=Main.cpu;String hash=Main.currentRomHash;
+        if(cpu==null || !cpu.running || !rom.equals(Main.currentRomFile))return;
+        if(entries.stream().anyMatch(e->e.enabled && e.name.startsWith("GFX\\"))){status.setText("Disable GFX codes before capturing a scene.");return;}
+        buildingGfx=true;status.setText("Capturing executed Fast3D scene commands...");
+        new SwingWorker<List<CheatRepository.Entry>,Void>() {
+            protected List<CheatRepository.Entry> doInBackground()throws Exception {
+                try {
+                    cpu.submitCommand(()->{if(cpu!=Main.cpu || !hash.equals(Main.currentRomHash))throw new IllegalStateException("The ROM changed.");kerneln64.cheats.Sm64SceneGfxCodes.begin();}).get(10,java.util.concurrent.TimeUnit.SECONDS);
+                    Thread.sleep(400);
+                    List<CheatRepository.Entry> result=new ArrayList<>();
+                    cpu.submitCommand(()->{if(cpu!=Main.cpu || !hash.equals(Main.currentRomHash))throw new IllegalStateException("The ROM changed.");result.addAll(kerneln64.cheats.Sm64SceneGfxCodes.finish());}).get(10,java.util.concurrent.TimeUnit.SECONDS);
+                    return result;
+                }finally{kerneln64.cheats.Sm64SceneGfxCodes.cancel();}
+            }
+            protected void done() {
+                buildingGfx=false;if(!isDisplayable() || cpu!=Main.cpu || !hash.equals(Main.currentRomHash))return;
+                try{var result=get();int added=0;for(var preset:result)if(entries.stream().noneMatch(e->e.name.equals(preset.name))){entries.add(preset);added++;}if(!CheatDialog.this.publish()){rebuild();return;}rebuild();status.setText(added+" scene GFX codes added (disabled, saved).");}
+                catch(Exception error){Throwable cause=error;while(cause.getCause()!=null)cause=cause.getCause();status.setText(cause.getMessage());}
+            }
+        }.execute();
+    }
     private void generateSamples() {
         if(buildingSamples || !isDisplayable())return;
         Cpu cpu=Main.cpu;String hash=Main.currentRomHash;
@@ -184,3 +208,4 @@ public final class CheatDialog extends JDialog {
         }
     }
 }
+

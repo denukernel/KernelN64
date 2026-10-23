@@ -24,7 +24,10 @@ public final class CheatRepository {
     }
     public static List<Entry> load(Path path,boolean sm64)throws IOException {
         String text=Files.exists(path)?Files.readString(path):"";
-        List<Entry> entries=parse(text);
+        List<Entry> entries=parse(Sm64BurstMusicCodes.upgrade(text));
+        for(Entry entry:entries)if(entry.codes.replace("\r\n","\n").equals(Sm64BurstMusicCodes.speedCode(1).replace("\r\n","\n")) || entry.codes.replace("\r\n","\n").equals(Sm64BurstMusicCodes.speedCode(2).replace("\r\n","\n"))){
+            boolean enabled=entry.enabled;Entry replacement=entry.codes.contains("B0222618 0002")?Sm64BurstMusicCodes.extremePreset():Sm64BurstMusicCodes.fasterPreset();entry.notes=replacement.notes;entry.enabled=enabled;
+        }
         if(sm64)for(Entry entry:entries)if(entry.name.equals("Sound Experiments\\Alien sounds and music") && entry.codes.equals("A031C1AF DDDD")) {
             entry.name="Audio\\Documented\\Alien sounds and music (experimental)";entry.group="sound";
         }
@@ -34,8 +37,14 @@ public final class CheatRepository {
             entries.addAll(forBuild(List.of(new Entry(Sm64HeadStretch.NAME,Sm64HeadStretch.NOTES,Sm64HeadStretch.CODES,false,""))));
         if(sm64 && !text.contains("# SM64 expanded preset catalog v2"))
             for(Entry preset:forBuild(Sm64ExtraCodes.presets()))if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);
-        if(sm64 && !text.contains("# SM64 music presets v2"))
+        if(sm64 && !text.contains("# SM64 music presets v4"))
             for(Entry preset:forBuild(Sm64MusicCodes.presets()))if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);
+        if(sm64 && !text.contains("# SM64 visual presets v1"))
+            for(Entry preset:forBuild(Sm64VisualCodes.presets()))if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);
+        if(sm64 && !text.contains("# SM64 display list presets v1"))
+            for(Entry preset:forBuild(Sm64DisplayListCodes.presets()))if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);
+        if(sm64 && !text.contains("# SM64 scene gfx presets v1"))
+            for(Entry preset:forBuild(Sm64ScenePresetCodes.presets()))if(entries.stream().noneMatch(e->e.name.equals(preset.name)))entries.add(preset);
         if(Main.decompCheats!=null)Main.decompCheats.prepare(entries);
         if(Main.decompCheatsRejected)for(var entry:entries)entry.enabled=false;
         AudioCodeSelection.loaded(entries);
@@ -76,7 +85,10 @@ public final class CheatRepository {
         }
     }
     public static String serialize(List<Entry> entries) {
-        StringBuilder out=new StringBuilder("# KernelN64 named GameShark codes\n# Mario-head stretch preset v1\n# SM64 expanded preset catalog v2\n# SM64 music presets v2\n");
+        StringBuilder out=new StringBuilder("# KernelN64 named GameShark codes\n# Mario-head stretch preset v1\n# SM64 expanded preset catalog v2\n# SM64 music presets v4\n# SM64 music-only bursts v5\n");
+        out.append("# SM64 visual presets v1\n");
+        out.append("# SM64 display list presets v1\n");
+        out.append("# SM64 scene gfx presets v1\n");
         for(Entry e:entries)out.append("[CHEAT]\nNAME=").append(e.name.replace('\n',' ')).append("\nNOTE=").append(e.notes.replace("\n","\\n")).append("\nGROUP=").append(e.group).append("\nADDRESSING=").append(e.addressing).append("\nENABLED=").append(e.enabled).append('\n').append(e.codes.strip()).append("\n\n");
         return out.toString();
     }
@@ -136,6 +148,9 @@ public final class CheatRepository {
         add(list,"Press L to levitate","D033AFA1 0020\n8133B1BC 4220\nD033AFA1 0020\n8133B17C 0300\nD033AFA1 0020\n8133B17E 0880",us+"Hold L to rise and release it to land.","");
         add(list,"Audio\\Documented\\Alien sounds and music (experimental)","A031C1AF DDDD",us+"Historical instruction corruption in the audio sequence parser; can disrupt sound or fault the audio thread. Up to four Audio effects can be enabled within the code budget. Supported pitch tables mix their relative changes; other writes must agree. Enable during gameplay. Disabling restores patched bytes; already queued sound may finish. Generated distortion presets change bounded audio data instead. Source: https://almarsguides.com/retro/walkthroughs/N64/Games/SuperMario64/Gameshark/GlitchCodes/.","sound");
         list.addAll(Sm64ExtraCodes.presets());
+        list.addAll(Sm64VisualCodes.presets());
+        list.addAll(Sm64DisplayListCodes.presets());
+        list.addAll(Sm64ScenePresetCodes.presets());
         return list;
     }
 }
